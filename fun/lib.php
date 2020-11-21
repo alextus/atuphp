@@ -1,4 +1,45 @@
 <?php
+/**
+ *
+ * @apiDefine RkNotFoundException
+ *
+ * @apiError RkNotFoundException 找不到相关数据
+ *
+ * @apiErrorExample Error-Response:
+ *     HTTP/1.1 404 Not Found
+ *     {
+ *       "error": {
+ *           "code": 404,
+ *           "msg": "",
+ *           "path" ""
+ *       }
+ *     }
+ *
+ */
+
+/**
+ *
+ * @api {get} /test 测试接口
+ * @apiVersion 1.1.0
+ * @apiName test
+ * @apiGroup test
+ *
+ * @apiParam {String} a 测试
+ * @apiSuccessExample Success-Response:
+ *     HTTP/1.1 200 OK
+ *     {
+ *       "sn": "P000000000",
+ *       "status": 0,
+ *       "soc": 80,
+ *       "voltage": 60.0,
+ *       "current": 10.0,
+ *       "temperature": null,
+ *       "reportTime": "2018-08-13 18:11:00"
+ *     }
+ *
+ * @apiUse RkNotFoundException
+ *
+ */
 function _get($txt)
 {
 

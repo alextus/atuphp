@@ -316,15 +316,15 @@ class ATU_Smarty
         {
             return '{}';
         }
-        elseif ($tag{0} == '*' && substr($tag, -1) == '*') // 注释部分
+        elseif ($tag[0] == '*' && substr($tag, -1) == '*') // 注释部分
         {
             return '';
         }
-        elseif ($tag{0} == '$') // 变量
+        elseif ($tag[0] == '$') // 变量
         {
             return '<?php echo ' . $this->get_val(substr($tag, 1)) . '; ?>';
         }
-        elseif ($tag{0} == '/') // 结束 tag
+        elseif ($tag[0] == '/') // 结束 tag
         {
             switch (substr($tag, 1))
             {
@@ -393,7 +393,7 @@ class ATU_Smarty
                 case 'assign':
                     $t = $this->get_para(substr($tag, 7),0);
 
-                    if ($t['value']{0} == '$')
+                    if ($t['value'][0] == '$')
                     {
                         /* 如果传进来的值是变量，就不用用引号 */
                         $tmp = '$this->assign(\'' . $t['var'] . '\',' . $t['value'] . ');';
@@ -542,7 +542,7 @@ class ATU_Smarty
                         break;
 
                     case 'default':
-                        $s[1] = $s[1]{0} == '$' ?  $this->get_val(substr($s[1], 1)) : "'$s[1]'";
+                        $s[1] = $s[1][0] == '$' ?  $this->get_val(substr($s[1], 1)) : "'$s[1]'";
                         $p = 'empty(' . $p . ') ? ' . $s[1] . ' : ' . $p;
                         break;
 
@@ -630,7 +630,7 @@ class ATU_Smarty
             if (strrpos($value, '='))
             {
                 list($a, $b) = explode('=', str_replace(array(' ', '"', "'", '&quot;'), '', $value));
-                if ($b{0} == '$')
+                if ($b[0] == '$')
                 {
                     if ($type)
                     {
@@ -1014,7 +1014,7 @@ class ATU_Smarty
         $out = '';
         foreach ($arr AS $key => $val)
         {
-            if ($val{0} == '$')
+            if ($val[0] == '$')
             {
                 $out .= $out ? ",'$key'=>$val" : "array('$key'=>$val";
             }

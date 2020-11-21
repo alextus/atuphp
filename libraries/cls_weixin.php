@@ -121,19 +121,19 @@ class weixin extends oauth{
              'access_token'=> $access_token, 
              'openid'=>$openid, 
              'lang'=>"zh_CN"
-         ); 
+        ); 
 		$url =$this->combineURL("https://api.weixin.qq.com/sns/userinfo",$params); 
 		$d=json_decode($this->http($url),TRUE);
 		
-		 $fp = fopen("data/log/$openid.json", "w");
-				 fwrite($fp, json_encode($d));
-				 fclose($fp);
+		$fp = fopen("data/log/$openid.json", "w");
+		fwrite($fp, json_encode($d));
+		fclose($fp);
 				 	
 		return $d;
 		
 	}
 	
-//后台获取用户信息
+	//后台获取用户信息
 	public function getUserBaseInfo($accessToken,$openid){
 		$params=array( 	
              'access_token'=> $accessToken, 
@@ -202,7 +202,17 @@ class weixin extends oauth{
 			}
 			return $access_token;
 	}
+	//开票功能，有待研究
+	public function getSpappid($access_token){
+		$url = 'https://api.weixin.qq.com/card/invoice/seturl?access_token='. $access_token;
+
+		//获得 access_token,expires_in
+		$res = json_decode($this->postJosn($url, array()), TRUE);
+
 	
+		
+		return $res;
+	}	
 	
 	/*JSSDK*/
 	
@@ -275,7 +285,6 @@ class weixin extends oauth{
 		  return $ticket;
 	}
 
-
 	//清空变量
 	public function clear(){
 		setcookie("access_token", '', 0);
@@ -285,8 +294,4 @@ class weixin extends oauth{
 		
 	}
 	
-	
- 
 }
-
-?>

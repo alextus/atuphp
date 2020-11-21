@@ -40,21 +40,30 @@ class ATU_Router{
 		if($path==""){return;}
 		$segments = explode('/', $path);
 		$temp = array('dir' => array(), 'path' => APPPATH.'controllers/');
+		
+		//排除目录
 		foreach($segments as $k => $v)
 		{
 			
-				$temp['path'] .= $v.'/';
-			
-				if(is_dir($temp['path']))
-				{
-					$temp['dir'][] = $v;
-					unset($segments[$k]);
-				}
+			$temp['path'] .= $v.'/';
+		
+			if(is_dir($temp['path']))
+			{
+				$temp['dir'][] = $v;
+				unset($segments[$k]);
+			}
 			
 		}
  		$directory=implode('/', $temp['dir']);
 		
 		$this->set_directory($directory);
+		//最后一个元素 排除.
+		$end_segments=array_pop($segments);
+		if(strpos($end_segments,".")){
+			
+			$segments=array_merge($segments,explode (".",$end_segments));
+		}
+
 		$segments = array_values($segments);
 		//array_values  返回数组，但不包含键名
 		unset($temp);
@@ -71,7 +80,6 @@ class ATU_Router{
 					
 					if (file_exists(APPPATH . 'controllers/' . $this->fetch_directory() . 'index.php')) {
 						$this->set_class_method_var("index", $segments[0],$segments);
-						
 					} else {
 						show_404($this->fetch_directory().$segments[0],"404");
 					}
@@ -124,12 +132,10 @@ class ATU_Router{
 			$this->set_var($var, $w);
 		}
 	}
-	function fetch_class()
-	{
+	function fetch_class(){
 		return $this->class;
 	}
-	function fetch_method()
-	{
+	function fetch_method(){
 		return $this->method;
 	}
 	function fetch_directory()
@@ -142,6 +148,9 @@ class ATU_Router{
 	}
 	function set_method($v)
 	{
+		if(in_array($v,array("list","print"))){
+			$v.="s";
+		}
 		$this->method=$v;
 	}
 	function set_var($arr,$s){

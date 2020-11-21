@@ -51,6 +51,7 @@ function str2htm($txt){
 	
 	return $txt;
 }
+
 function htm2str($txt){
 
 	$txt = str_replace("&nbsp;",chr(0),$txt);
@@ -306,113 +307,6 @@ function del_file($sFile){
     if(file_exists($sFile)){
 		unlink($sFile);
 	}
-}
-
-/*
-摘要算法等
-*/
-/**
-
- * 生成摘要
-
- * @param  string  $content='' 富文本内容源码
-
- * @param  integer $length=3000 摘要字数限制
-
- * @return [type]
-
- */
-
- function generateDigest($content='',$length=3000) {
-
-    // 实例化Fl
-
-    $flInstance = self::getInstance();
-
-    // HTML词法分析
-
-    $analyticResult = $flInstance->analytic_html($content);
-
-  
-
-    $result = '';
-
-    $htmlTagStack = array();
-
-  
-
-    // 遍历词法分析的结果
-
-    foreach ($analyticResult as $key => $item) {
-
-        // 分析单个标签
-
-        $tagAttr = $flInstance->analytic_html($item[0],2);
-
-  
-
-        // 开始标签，如：<p>、<div id="xx">
-
-        if($item[1] == FL::HTML_TAG_START) {
-
-            // 将不能自动闭合的标签压栈
-
-            if(!$flInstance->analytic_html($tagAttr[1],4)) {
-
-                $htmlTagStack[] = $tagAttr[1];
-
-            }
-
-        }
-
-        // 结束标签
-
-        elseif($item[1] == FL::HTML_TAG_END) {
-
-            // 当前结束标签和栈顶的标签相同，则出栈该标签
-
-            if($tagAttr[1] == $htmlTagStack[count($htmlTagStack) - 1]) {
-
-                array_pop($htmlTagStack);
-
-            }
-
-        }
-
-  
-
-        // 拼接摘要
-
-        $result .= $item[0];
-
-  
-
-        // 字数控制
-
-        if(strlen($result) >= $length) {
-
-            break;
-
-        }
-
-    }
-
-  
-
-    // 将没有闭合的标签，都闭合起来
-
-    for ($i=count($htmlTagStack) - 1; $i >= 0 ; $i--) { 
-
-        $result .= ('</' . $htmlTagStack[$i] . '>');
-
-    }
-
-  
-
-    // 生成最终摘要
-
-    return $result;
-
 }
 
 //XSS过滤函数
