@@ -438,38 +438,6 @@ if ( ! function_exists('html_escape'))
 
 
 
-/*
-网页请求类
-*/
-function http($url, $postfields='', $method='GET', $headers=array()){ 
-
-	 $curl=curl_init(); 
-	 
-	 curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE); 
-	 curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1); 
-	 curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 30); 
-	 curl_setopt($curl, CURLOPT_TIMEOUT, 30); 
-	 if($method=='POST'){ 
-		 curl_setopt($curl, CURLOPT_POST, TRUE); 
-		 if($postfields!='')curl_setopt($ci, CURLOPT_POSTFIELDS, $postfields); 
-	 } 
-	 $headers[]="User-Agent: ATUPHP(alextu.com)"; 
-	 curl_setopt($curl, CURLOPT_HTTPHEADER, $headers); 
-	 curl_setopt($curl, CURLOPT_URL, $url); 
-	 /*
-	 简略版
-	 curl_setopt($curl, CURLOPT_URL, $url);
-	 curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,FALSE);
-	 curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,FALSE);
-	 curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
-	 */ 
-
-	 $response=curl_exec($curl); 
-	 curl_close($curl); 
-	 return $response; 
-
-} 
-	 
 
 //兼容低版本PHP
 require_once(BASEPATH."fun/function_exists.php");

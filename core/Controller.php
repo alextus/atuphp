@@ -1,5 +1,5 @@
 <?php
-
+define('MAGIC_QUOTES_GPC',ini_set("magic_quotes_runtime",0)?True:False);
 /**
  * Controller Class
  *
@@ -96,36 +96,8 @@ class ATU_Controller
 		return round(memory_get_usage() / 1024 / 1024, 2) . 'MB';
 	}
 
-	function S_get($txt)
-	{
-		return isset($_GET[$txt]) ? $this->Security->SQLFilter(trim($_GET[$txt])) : "";
-	}
 
-	function S_post($txt)
-	{
-		if (empty($_POST[$txt])) {
-			return "";
-		}
-		if (is_array($_POST[$txt])) {
-			$p = array();
-			foreach ($_POST[$txt] as $k => $v) {
-				$p[$k] = isset($v) ? $this->Security->SQLFilter(trim($v)) : "";
-			}
-			return $p;
-		} else {
-			return isset($_POST[$txt]) ? $this->Security->SQLFilter(trim($_POST[$txt])) : "";
-		}
-	}
-
-	function S_cookie($txt)
-	{
-
-
-		$prefix = config_item('cookie_prefix') != '' ? config_item('cookie_prefix') : "";
-		$txt = $prefix . $txt;
-
-		return isset($_COOKIE[$txt]) ? $this->Security->SQLFilter(trim($_COOKIE[$txt])) : "";
-	}
+	
 	function set_cookie($name = '', $value = '', $expire = '', $path = '/', $domain = '', $prefix = '', $secure = FALSE)
 	{
 		/*
@@ -171,69 +143,41 @@ class ATU_Controller
 
 	public function _get($name)
 	{
-		$d = array();
-		if (is_array($name)) {
-			foreach ($name as $rs) {
-				$d[$rs] = $this->S_get($rs);
-			}
-		} else {
-			if ($name == "") {
-				foreach ($_GET as $rs) {
-					$d[$rs] = $this->S_get($rs);
-				}
-			} else {
-				$d = $this->S_get($name);
-			}
-		}
-		return $d;
+		return _get($name);
 	}
 
-	public function _post($name = "", $xss = false)
+	public function _post($name = "")
 	{
-		if (is_array($name)) {
-			foreach ($name as $rs) {
-				$d[$rs] = $this->S_post($rs);
-			}
-		} else {
-
-			if ($name == "") {
-				$d = array();
-				if ($xss) {
-					foreach ($_POST as $key => $val) {
-						$d[$key] = preg_replace('/\'/i', '&acute;', $val);
-					}
-				} else {
-					$d = $_POST;
-				}
-			} else {
-				$d = $this->S_post($name);
-			}
-		}
-		return $d;
+		return _post($name);
 	}
 
 	public function _cookie($name, $value = null, $exitTime = 0)
 	{
-		if (empty($value)) {
+		$prefix = config_item('cookie_prefix') != '' ? config_item('cookie_prefix') : "";
+		$name = $prefix . $name;
 
-			return $this->S_cookie($name);
+		if (empty($value)) {
+			
+			return S_cookie($name);
 		} else {
 
 			$this->set_cookie($name, $value, $exitTime == 0 ? time() + 1 * 60 * 60 : $exitTime);
 		}
 	}
-	public function get($name)
+	public function get($name = "", $xss = true)
 	{
-		return $this->_get($name);
+		return S_get($name, $xss);
 	}
-	public function post($name = "", $xss = false)
+	public function post($name = "", $xss = true)
 	{
-		return $this->_post($name, $xss);	#
+		return S_post($name, $xss);
 	}
 	public function cookie($name, $value = null, $exitTime = 0)
 	{
 		return $this->_cookie($name, $value, $exitTime);
 	}
+
+
 
 
 

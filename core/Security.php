@@ -1,4 +1,5 @@
 <?php  
+
 /**
  * ATUphp
  *
@@ -863,9 +864,14 @@ class ATU_Security {
 	
 	public function SQLFilter($txt){
 
-	 if (!get_magic_quotes_gpc()) {  $txt = addslashes($txt); } 
+	 
 	 if(is_null($txt))   { return ""; exit; }
 	 if(is_numeric($txt)){ return $txt; exit; }
+		
+		if (!MAGIC_QUOTES_GPC){
+			$txt = addslashes($txt);
+		}
+		
 	
 		$txt = str_replace("script", "&#115;cript",$txt);
 		$txt = str_replace("SCRIPT", "&#083;CRIPT",$txt);

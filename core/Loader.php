@@ -203,6 +203,7 @@ class ATU_Loader {
 
 		foreach ($this->_atu_model_paths as $mod_path)
 		{
+			$model=str_replace("Model","",$model)."Model";
 			if ( ! file_exists($mod_path.'models/'.$path.$model.'.php'))
 			{
 				continue;
@@ -211,13 +212,10 @@ class ATU_Loader {
 			{
 				load_class('Model', 'core');
 			}
-			
 		
-			
-			
 			require_once($mod_path.'models/'.$path.$model.'.php');
 
-			$model = ucfirst($model);
+			//$model = ucfirst($model);
 
 			$ATU->$name = new $model();
 

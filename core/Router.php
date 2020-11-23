@@ -27,20 +27,23 @@ class ATU_Router{
 		//分析 directory、class、method
 		
 		$path=empty($_SERVER["PATH_INFO"])?"/index":$_SERVER["PATH_INFO"];
-		
+		$needExplodeEnd=0;
 		foreach($this->routes_replace as $k =>$v){
+			if(strpos($path,$k)){
+				$needExplodeEnd=1;
+			}
 			$path = str_replace($k, $v, $path);
 		}
 		/*
 		$path=str_replace(".html","",$path);
 		$path = str_replace(".php", "", $path);
 		*/
-
+		//echo $path;
 		
 		if($path==""){return;}
 		$segments = explode('/', $path);
 		$temp = array('dir' => array(), 'path' => APPPATH.'controllers/');
-		
+		//print_r($segments);
 		//排除目录
 		foreach($segments as $k => $v)
 		{
@@ -52,34 +55,40 @@ class ATU_Router{
 				$temp['dir'][] = $v;
 				unset($segments[$k]);
 			}
-			
 		}
+	
  		$directory=implode('/', $temp['dir']);
 		
 		$this->set_directory($directory);
-		//最后一个元素 排除.
-		$end_segments=array_pop($segments);
-		if(strpos($end_segments,".")){
-			
-			$segments=array_merge($segments,explode (".",$end_segments));
-		}
 
+		//最后一个元素 排除.
+		if($needExplodeEnd){
+			$end_segments=array_pop($segments);
+			if(strpos($end_segments,".")){
+				$segments=array_merge($segments,explode (".",$end_segments));
+			}else{
+				$segments[]=$end_segments;
+			}
+		}
+		
 		$segments = array_values($segments);
+	
 		//array_values  返回数组，但不包含键名
 		unset($temp);
 
-		//print_r($segments);
-	
+		//print_r($segments);exit;
+		
 		if (count($segments) > 0){
+				
 				/*
 				echo $this->fetch_directory()."<br/>";
 				print_r($segments);
 				*/
 				if ( ! file_exists(APPPATH.'controllers/'.$this->fetch_directory().$segments[0].'.php')){
 					//最后一个参数文件不存在，从默认文件中找
-					
 					if (file_exists(APPPATH . 'controllers/' . $this->fetch_directory() . 'index.php')) {
-						$this->set_class_method_var("index", $segments[0],$segments);
+						
+						$this->set_class_method_var("index", $segments[0]==""?"index":$segments[0],$segments);
 					} else {
 						show_404($this->fetch_directory().$segments[0],"404");
 					}
@@ -91,7 +100,6 @@ class ATU_Router{
 							//如果有同名文件，优先调用文件的，然后调用index的
 							$c = count($segments) > 2 && $segments[2] != "";
 							$this->set_class_method_var($segments[1], $c ? $segments[2]: "index", $segments,3);
-						
 						
 					}else{
 						$c= count($segments) > 1 && $segments[1] != "";

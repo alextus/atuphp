@@ -10,7 +10,6 @@ class ATU_Model {
 	
 	}
 
-
 	function __get($key)
 	{
 		$ATU =& get_instance();

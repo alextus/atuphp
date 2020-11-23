@@ -134,6 +134,35 @@ class Alex{
 	public function addFile($folderFile,$content){
 		
 	}
+
+
+	function set($f,$d){
+		$file=$this->path."$f.json";
+		
+		if(file_exists($file)){
+			$f=file_put_contents($file,json_encode($d));
+		}else{
+			return array();	
+		}
+	}
+	function get($f){
+		$file=$this->path."$f.json";
+		if(file_exists($file)){
+			$f=file_get_contents($files);
+			return json_decode($f,true);
+		}else{
+			return array();	
+		}
+	}
+	function query($keysArr){
+		$context = stream_context_create(array('http'=>array('ignore_errors'=>true)));
+
+		$url= $this->tokenUrl."&".http_build_query($keysArr);
+	    $d=file_get_contents($url, FALSE, $context);
+	    return $d;
+	
+		
+	}
   
 }
 		

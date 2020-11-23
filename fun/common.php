@@ -1,4 +1,128 @@
 <?php
+/**
+ * 基础函数库,Core/Controller.php中引用
+ *
+ */
+function _get($str, $xss = false)
+{
+
+    return isset($_GET[$str])?_svar($_GET[$str], $xss):"";
+}
+
+function _post($str, $xss = false)
+{
+    return isset($_POST[$str])?_svar($_POST[$str], $xss):"";
+}
+
+function _cookie($str, $xss = false)
+{
+	return isset($_COOKIE[$str])?_svar($_COOKIE[$str], $xss):"";
+}
+function S_get($txt= "", $xss = true)
+{
+    $d = array();
+    if (is_array($txt)) {
+        foreach ($txt as $key) {
+            $d[$key] = _get($key, $xss);
+        }
+    } else {
+        if ($txt == "") {
+            foreach ($_GET as $key) {
+                $d[$key] = _get($key, $xss);
+            }
+        } else {
+            $d = _get($txt, $xss);
+        }
+    }
+    return $d;
+}
+function S_post($txt= "", $xss = true)
+{   
+    $d = array();
+    if (is_array($txt)) {
+        foreach ($txt as $key) {
+            $d[$key] = _post($key, $xss);
+        }
+    } else {
+        if ($txt == "") {
+            foreach ($_POST as $key => $val) {
+                $d[$key] =  _post($key, $xss);
+            }
+          
+        } else {
+            $d =_post($txt, $xss);
+        }
+    }
+    return $d;
+}
+function S_cookie($txt, $xss = false)
+{
+    $d = array();
+    if (is_array($txt)) {
+        foreach ($txt as $key) {
+            $d[$key] = _cookie($key, $xss);
+        }
+    } else {
+        if ($txt == "") {
+            foreach ($_GET as $key) {
+                $d[$key] = _cookie($key, $xss);
+            }
+        } else {
+            $d = _cookie($txt, $xss);
+        }
+    }
+    return $d;
+}
+function _svar($txt, $xss = false)
+{
+    return $xss?SQLFilter(trim($txt)):trim($txt);
+}
+function SQLFilter($txt)
+{
+    if (is_numeric($txt)) {
+        return $txt;
+    }
+    if (is_null($txt)) {
+        return "";
+    }
+    if (!MAGIC_QUOTES_GPC){
+        $txt = addslashes($txt);
+    }
+    
+
+    $txt = str_replace("script", "&#115;cript", $txt);
+    $txt = str_replace("SCRIPT", "&#083;CRIPT", $txt);
+    $txt = str_replace("Script", "&#083;cript", $txt);
+    $txt = str_replace("script", "&#083;cript", $txt);
+    $txt = str_replace("object", "&#111;bject", $txt);
+    $txt = str_replace("OBJECT", "&#079;BJECT", $txt);
+    $txt = str_replace("Object", "&#079;bject", $txt);
+    $txt = str_replace("object", "&#079;bject", $txt);
+    $txt = str_replace("applet", "&#097;pplet", $txt);
+    $txt = str_replace("APPLET", "&#065;PPLET", $txt);
+    $txt = str_replace("Applet", "&#065;pplet", $txt);
+    $txt = str_replace("applet", "&#065;pplet", $txt);
+    $txt = str_replace("select", "sel&#101;ct", $txt);
+    $txt = str_replace("execute", "&#101xecute", $txt);
+    $txt = str_replace("exec", "&#101xec", $txt);
+    $txt = str_replace("join", "jo&#105;n", $txt);
+    $txt = str_replace("union", "un&#105;on", $txt);
+    $txt = str_replace("where", "wh&#101;re", $txt);
+    $txt = str_replace("insert", "ins&#101;rt", $txt);
+    $txt = str_replace("delete", "del&#101;te", $txt);
+    $txt = str_replace("update", "up&#100;ate", $txt);
+    $txt = str_replace("like", "lik&#101;", $txt);
+    $txt = str_replace("drop", "dro&#112;", $txt);
+    $txt = str_replace("create", "cr&#101;ate", $txt);
+    $txt = str_replace("rename", "ren&#097;me", $txt);
+    $txt = str_replace("exists", "e&#120;ists", $txt);
+    $txt = str_replace("'", "&quot;", $txt);
+    $txt = str_replace("`", "&quot;", $txt);
+
+    return $txt;
+}
+
+
 function str_len($str){
     $length = strlen(preg_replace('/[\x00-\x7F]/', '', $str));
     if ($length){
@@ -180,7 +304,9 @@ function Alexdate(){
 }
 function AlexDay(){return Alexdate();}
 function AlexYm(){return date("Ym", time());}
-
+function Alextime(){
+	return  time()-strtotime("1982-12-19");
+}
 
 
 
@@ -196,13 +322,8 @@ function FormatNum($num,$weishu){
 	return $FormatNum;
 }
 
-function Alextime(){
-	return  time()-strtotime("1982-12-19");
-}
 
 function now(){ return date("Y-m-d H:i:s", time());}
-
-
 
 
 
@@ -364,3 +485,37 @@ function isPhone(){
   return !preg_match("/(ipad)/i", $ua) && $ua != '' &&  preg_match($uachar, $ua); 
 }
 
+/*
+网页请求类
+*/
+function http($url, $data='',$headers=array()){ 
+
+	$curl=curl_init(); 
+	
+	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, FALSE); 
+	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, FALSE);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE); 
+	curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 30); 
+	curl_setopt($curl, CURLOPT_TIMEOUT, 30); 
+	if (!empty($data)) {
+		curl_setopt($curl, CURLOPT_POST, TRUE);
+		curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
+	}
+	$headers[]="User-Agent: ATUPHP(alextu.com)"; 
+	if (count($headers) >= 1) {
+		curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
+	}
+	curl_setopt($curl, CURLOPT_URL, $url); 
+	/*
+	简略版
+	curl_setopt($curl, CURLOPT_URL, $url);
+	curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,FALSE);
+	curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,FALSE);
+	curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
+	*/ 
+
+	$response=curl_exec($curl); 
+	curl_close($curl); 
+	return $response; 
+
+} 
