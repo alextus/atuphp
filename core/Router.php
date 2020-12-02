@@ -22,11 +22,32 @@ class ATU_Router{
 		$this->isNotFound=false;
 		
 	}
-	
+	private function path_info(){
+		//兼容phpstudy,path_info为空
+		if(isset($_SERVER['PATH_INFO'])){
+			$_path_info = $_SERVER['PATH_INFO'];
+			
+		}elseif(isset($_SERVER['REDIRECT_PATH_INFO'])){
+			$_path_info = $_SERVER['REDIRECT_PATH_INFO'];
+		
+		}elseif(isset($_SERVER['REDIRECT_URL'])){
+			$_path_info = $_SERVER['REDIRECT_URL'];
+		
+		}elseif(isset($_SERVER['ORIG_PATH_INFO'])){
+			$_path_info = $_SERVER['ORIG_PATH_INFO'];
+			
+		}
+		if(empty($_path_info)){
+			return '/index';
+		}else{
+			return $_path_info;
+		}
+
+	}
 	public function _set_routing(){
 		//分析 directory、class、method
-		
-		$path=empty($_SERVER["PATH_INFO"])?"/index":$_SERVER["PATH_INFO"];
+	
+		$path=$this->path_info();
 		$needExplodeEnd=0;
 		foreach($this->routes_replace as $k =>$v){
 			if(strpos($path,$k)){

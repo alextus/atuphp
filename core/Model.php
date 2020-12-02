@@ -6,8 +6,7 @@ class ATU_Model {
 	
 	function __construct()
 	{
-		//log_message('debug', "Model Class Initialized");
-	
+		//log_message('debug', "Model Class Initialized");	
 	}
 
 	function __get($key)

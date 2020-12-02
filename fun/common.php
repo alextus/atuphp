@@ -1,4 +1,5 @@
 <?php
+define('MAGIC_QUOTES_GPC',ini_set("magic_quotes_runtime",0)?True:False);
 /**
  * 基础函数库,Core/Controller.php中引用
  *
