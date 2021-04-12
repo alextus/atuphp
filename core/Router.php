@@ -108,7 +108,6 @@ class ATU_Router{
 				if ( ! file_exists(APPPATH.'controllers/'.$this->fetch_directory().$segments[0].'.php')){
 					//最后一个参数文件不存在，从默认文件中找
 					if (file_exists(APPPATH . 'controllers/' . $this->fetch_directory() . 'index.php')) {
-						
 						$this->set_class_method_var("index", $segments[0]==""?"index":$segments[0],$segments);
 					} else {
 						show_404($this->fetch_directory().$segments[0],"404");

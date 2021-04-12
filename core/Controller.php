@@ -228,11 +228,14 @@ class ATU_Controller
 		curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 		curl_setopt($ch, CURLOPT_USERAGENT, $agent);
 		curl_setopt($ch, CURLOPT_ENCODING, 'gzip');
+		curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, FALSE); 
+		curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, FALSE);
 		$q = curl_exec($ch);
 
 		//print_r($header);
 		if ($q == false) {
 			//echo $url;
+		
 			return curl_error($ch);
 		} else {
 

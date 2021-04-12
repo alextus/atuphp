@@ -101,6 +101,13 @@ class ATU_Smarty
     {
         echo $this->getHTTPPage($filename, $cache_id = '');
     }
+
+    function show($filename,$arr){
+        foreach($arr as $k=>$v){
+            $this->assign($k,$v);
+        }
+        $this->display($filename);
+    }
 	
 	function getHTTPPage($filename, $cache_id = '')
     {
