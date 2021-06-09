@@ -1,10 +1,17 @@
 <?php
 
 /**
- * Mysql数据库类
- PHP>=5.0,Mysql>=5.0
- 使用 mysqli 替换 pconnect
-*/
+ * ATTUS 数据库类  PHP>=5.6,Mysql>=5.0
+ * ============================================================================
+ * 版权所有 2018-2021 ATTUS，并保留所有权利。
+ * 网站地址: http://www.attus.cn；
+ * ----------------------------------------------------------------------------
+ * 这不是一个自由软件！您只能在不用于商业目的的前提下对程序代码进行修改和
+ * 使用；不允许对程序代码以任何形式任何目的的再发布。
+ * ============================================================================
+ * $Author: Alex.TU $
+ * $Id: atu_smarty.php 070110 2021-05-23 17:03:16 Alex.TU 宁波 $
+ */
 
 
 class ATU_Mysql
@@ -17,6 +24,13 @@ class ATU_Mysql
     var $starttime      = 0;
 	var $mysqli   =0;
 	var $querys    =NULL; //最后一次查询
+
+    private $tablename = null;
+    var  $sql = [
+        'where'   => null,
+        'orderBy' => null,
+        'limit'   => null,
+    ];
 
  
     function __construct($db=NULL)
@@ -107,7 +121,7 @@ class ATU_Mysql
 
     function set_mysql_charset($charset)
     {
-           if (in_array(strtolower($charset), array('gbk', 'big5', 'utf-8', 'utf8')))
+           if (in_array(strtolower($charset), array('gbk', 'big5', 'utf-8', 'utf8','utf8mb4')))
             {
                 $charset = str_replace('-', '', $charset);
             }
@@ -117,7 +131,7 @@ class ATU_Mysql
             }
         
     }
-
+   
     function fetch_array($query, $result_type = MYSQL_ASSOC)
     {
         return $this->mysqlFun("fetch_array",$query, $result_type);
@@ -139,7 +153,7 @@ class ATU_Mysql
         if (!($this->querys = $this->mysqlFun("query",$sql,$this->link_id)) && $type != 'SILENT')
         {
             $this->error_message[]['message'] = 'MySQL Query Error';
-            $this->error_message[]['sql'] = $sql;
+            $this->error_message[]['sql']   = $sql;
             $this->error_message[]['error'] = $this->mysqlFun("error",$this->link_id);
             $this->error_message[]['errno'] = $this->mysqlFun("errno",$this->link_id);
 
@@ -263,10 +277,41 @@ class ATU_Mysql
 
         return $this->query($sql);
     }
-
-    function getOne($sql, $limited = false){
-	
-        if ($limited == true) {    $sql = trim($sql . ' LIMIT 1');  }
+    public function table($tablename){
+        $this->tablename = $tablename;
+        $this->sql = [
+            'where'   => null,
+            'orderBy' => null,
+            'limit'   => null,
+        ];
+        return $this;
+    }
+    public function limit($limit, $limitCount = null) {
+        if(!$limitCount) {
+            $this->sql['limit'] = $limit;
+        }else{
+            $this->sql['limit'] = $limit .','. $limitCount;
+        }
+        return $this;
+    }
+    public function orderBy($orderBy) {
+        $this->sql['orderBy'] = $orderBy;
+        return $this;
+    }
+    public function where($where) {
+        if(!is_array($where)) {
+            $this->sql['where'] = $where;
+            return $this;
+        }
+        $this->sql['where'] =$this->iniSqlArr($where," and ");
+       
+        return $this;
+    }
+    
+    function getOne($sql='*'){
+        if(!$this->isSql($sql)){
+            $sql=$this->iniSql("select",$sql);
+        }
         $res = $this->query($sql);
 		
         if ($res !== false)
@@ -286,8 +331,11 @@ class ATU_Mysql
             return false;
         }
     }
-    function getAll($sql)
+    function getAll($sql="*")
     {
+        if(!$this->isSql($sql)){
+            $sql=$this->iniSql("select",$sql);
+        }
         $res = $this->query($sql);
         if ($res !== false)
         {
@@ -304,13 +352,11 @@ class ATU_Mysql
             return false;
         }
     }
-    function getRow($sql, $limited = false)
+    function getRow($sql="*")
     {
-        if ($limited == true)
-        {
-            $sql = trim($sql . ' LIMIT 1');
+        if(!$this->isSql($sql)){
+            $sql=$this->iniSql("select",$sql);
         }
-
         $res = $this->query($sql);
         if ($res !== false)
         {
@@ -320,6 +366,9 @@ class ATU_Mysql
         {
             return false;
         }
+    }
+    public function select($sql="*"){
+        return $this->getAll($sql);
     }
 
    
@@ -482,60 +531,113 @@ class ATU_Mysql
     //20200419 增加
     function getSql($do, $table, $where = array(), $data = array())
     {
-        $sql = $do . " " .$table;
-
-        if (trim($do) == "update") {
-            $sql .= " set ";
-            $e = count($data);
-            $i = 0;
-            foreach ($data as $key => $val) {
-                $i++;
-                $sql .= is_string($val) ? "$key='$val'" : "$key=$val";
-                $sql .= $i == $e ? "" : ",";
-            }
+        $do=trim(strtolower($do));
+      
+        if ($do == "update") {
+            $sql = sprintf("UPDATE %s SET %s", $table, $this->iniSqlArr($data));
         }
-        if (trim($do) == "insert") {
+        if ($do == "insert") {
             $data = $where;
-            $sql = $do . " into " . $table;
-            $sql .= " (";
-            $e = count($data);
-            $i = 0;
-            foreach ($data as $key => $val) {
-                $i++;
-                $sql .= $key;
-                $sql .= $i == $e ? "" : ",";
+            foreach ($data as $key => &$value) {
+                $value = addslashes($value);
             }
-            $sql .= " ) values(";
-            $i = 0;
-            foreach ($data as $key => $val) {
-                $i++;
-                $sql .= is_string($val) ? "'$val'" : "$val";
-                $sql .= $i == $e ? "" : ",";
-            }
-            $sql .= " )";
+            $keys = "`".implode('`,`', array_keys($data))."`";
+            $values = "'".implode("','", array_values($data))."'";
+            $sql = sprintf("INSERT INTO %s ( %s ) VALUES ( %s )", $table, $keys, $values);
+    
         } else {
+            if ($do == "delete") {
+                $sql = "DELETE FROM $table";
+            }
+            if ($do == "select") {
+                $sql = "SELECT *  FROM $table";
+            }
             if (sizeof($where) > 0) {
-                $sql .= " where ";
-                foreach ($where as $key => $val) {
-                    $sql .= reset($where) == $val ? "" : "and ";
-                    $sql .= is_string($val) ? "$key='$val' " : "$key=$val ";
-                }
+                $sql .= " WHERE ";
+                $sql .=$this->iniSqlArr($where," and ");
+                
             }
         }
         return $sql;
     }
-    function isExist($where, $table)
+    function iniSqlArr($data,$split=','){
+      
+        if(array_key_exists("0",$data)){
+            $updateFields=$data;
+          
+        }else{
+            $updateFields = [];
+            foreach ($data as $key => $value) {
+                $up_value = addslashes($value);
+                $updateFields[] = "`$key`='$up_value'";
+            }
+        }
+        
+        $str = implode($split, $updateFields);
+       
+        return $str;
+    }
+    function iniSql($do,$str){
+        $do=trim(strtolower($do));
+        if($do=="select"){
+            if(is_array($str)){
+                $querySql = sprintf("SELECT %s FROM %s", $this->iniSqlArr($str), $this->tablename);
+            }else{
+                $querySql = sprintf("SELECT %s FROM %s", $str, $this->tablename);
+            }  
+        }
+        if($do=="update"){
+            if(is_array($str)){
+                $querySql = sprintf("UPDATE %s SET %s", $this->tablename, $this->iniSqlArr($str));
+            }else{
+                $querySql = "UPDATE ".$this->tablename." SET ".$str;
+            }
+            
+        }
+        
+        if(!empty($this->sql['where'])) {
+            $querySql .= ' WHERE ' . $this->sql['where'];
+        }
+        if(!empty($this->sql['orderBy'])) {
+            $querySql .= ' ORDER BY ' . $this->sql['orderBy'];
+        }
+        if(!empty($this->sql['limit'])) {
+            $querySql .= ' LIMIT ' . $this->sql['limit'];
+        }
+        return $querySql;
+    }
+    function isExist($where, $table="")
     {
-
-        $d = $this->getRow($this->getSql("select * from ", $table, $where));
+        if($table==""){$table=$this->tablename;}
+        $d = $this->getRow($this->getSql("select", $table, $where));
         return  $d;
     }
-    function add($data, $table)
+    public function insert($data, $table=""){
+        if($table==""){$table=$this->tablename;}
+        return $this->add($data, $table);
+    }
+    public function delete($str="", $table="") {
+        if($table==""){$table=$this->tablename;}
+        if($str){
+            if(is_array($str)){
+                $this->sql['where']=$this->iniSqlArr($str," and ");
+               
+            }else{
+               
+                 $this->sql['where']=$str;
+               
+            }
+        }
+        $querySql = sprintf("DELETE FROM %s WHERE ( %s )",$table, $this->sql['where']);
+      
+        return $this->query($querySql);
+    }
+    function add($data, $table="")
     {
-
+        if($table==""){$table=$this->tablename;}
         return  $this->publish(0, $data, $table);
     }
-    function  del($ID, $isDel = true, $table)
+    function  del($ID, $table, $isDel = false)
     {
         if (is_array($ID)) {
             $where = $ID;
@@ -543,23 +645,29 @@ class ATU_Mysql
             $where = array("ID" => $ID);
         }
         if (!$isDel) {
-            $this->update(array("isDel" => 1), $where, $table);
+            $this->update(array("is_del" => 1), $where, $table);
         } else {
-            $this->query($this->getSql("delete from ", $table, $where));
+            $this->query($this->getSql("delete", $table, $where));
         }
     }
-    function update($d, $n, $v)
+    function update($d, $n="", $v="")
     {
-        if (is_array($d)) {
-            $data = $d;
-            $where = $n;
-            $table = $v;
-        } else {
-          
-            $data = array($n => $v);
-            $where = array("ID" => $d);
+        if($n=="" && $v==""){
+            $sql=$this->iniSql("update",$d);
+        }else{
+            if (is_array($d)) {
+                $data = $d;
+                $where = $n;
+                $table = $v==""?$this->table:$v;
+            } else {
+            
+                $data = array($n => $v);
+                $where = array("ID" => $d);
+                //获取table主键
+            }
+            $sql=$this->getSql("update", $v, $where, $data);
         }
-        return $this->query($this->getSql("update", $v, $where, $data));
+        return $this->query($sql);
     }
     //发布或者更新
     function publish($ID, $data, $table)
@@ -585,8 +693,16 @@ class ATU_Mysql
     }
     
     
+    //判断是否为sql语句
+    function isSql($sql){
+        $sql=strtolower($sql);
+        if(strpos($sql,'select ') !== false||strpos($sql,'insert ') !== false||strpos($sql,'update ') !== false||strpos($sql,'delete ') !== false){
+            return true;
+        }else{
+            return false;
+        }
 
-
+    }
     
 	function mysqlFun($fun,$v,$r=""){
 		if(in_array($fun,array("query"))){

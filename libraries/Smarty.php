@@ -34,7 +34,6 @@ class ATU_Smarty
     var $_checkfile     = true;
     var $_foreachmark   = '';
     var $_seterror      = 0;
-  
 
 
     function __construct()
@@ -85,7 +84,6 @@ class ATU_Smarty
                 $this->_var[$tpl_var] = $value;
             }
         }
-		
     }
 
     /**
@@ -119,9 +117,11 @@ class ATU_Smarty
 
         if (strpos($out, $this->_echash) !== false)
         {
+            
             $k = explode($this->_echash, $out);
             foreach ($k AS $key => $val)
             {
+                
                 if (($key % 2) == 1)
                 {
                     $k[$key] = $this->insert_mod($val);
@@ -146,7 +146,7 @@ class ATU_Smarty
      */
     function fetch($filename, $cache_id = '')
     {
-		
+       
         if (!$this->_seterror)
         {
             error_reporting(E_ALL ^ E_NOTICE);
@@ -174,31 +174,30 @@ class ATU_Smarty
             if ($this->direct_output)
             {
                 $this->_current_file = $filename;
-
+               
                 $out = $this->_eval($this->fetch_str(file_get_contents($filename)));
             }
             else
             {
-				
+             
                 if ($cache_id && $this->caching)
                 {
                     $out = $this->template_out;
                 }
                 else
                 {
-					
                     if (!in_array($filename, $this->template))
                     {
                         $this->template[] = $filename;
                     }
-
+                  
                     $out = $this->make_compiled($filename);
-
+                 
                     if ($cache_id)
                     {
                         $cachename = basename($filename, strrchr($filename, '.')) . '_' . $cache_id;
-					
-						
+
+                       
                         $data = serialize(array('template' => $this->template, 'expires' => $this->_nowtime + $this->cache_lifetime, 'maketime' => $this->_nowtime));
                         $out = str_replace("\r", '', $out);
 
@@ -276,6 +275,7 @@ class ATU_Smarty
         if ($this->force_compile || $filestat['mtime'] > $expires)
         {
             $this->_current_file = $filename;
+           
             $source = $this->fetch_str(file_get_contents($filename));
 
             if (file_put_contents($name, $source, LOCK_EX) === false)
@@ -316,7 +316,7 @@ class ATU_Smarty
      */
     function select($tag)
     {
-	
+       
         $tag = stripslashes(trim($tag));
 
         if (empty($tag))
@@ -329,7 +329,12 @@ class ATU_Smarty
         }
         elseif ($tag[0] == '$') // 变量
         {
-            return '<?php echo ' . $this->get_val(substr($tag, 1)) . '; ?>';
+            $v=$this->get_val(substr($tag, 1));
+            //return '<?php echo ' . $v . '; ';
+      
+            return '<?php echo ' . $v . ';?>';
+            
+           
         }
         elseif ($tag[0] == '/') // 结束 tag
         {
@@ -355,7 +360,9 @@ class ATU_Smarty
                 case 'literal':
                     return '';
                     break;
-
+                case 'nosmarty':
+                    return '';
+                    break;
                 default:
                     return '{'. $tag .'}';
                     break;
@@ -425,12 +432,10 @@ class ATU_Smarty
 
                     return '<?php echo $this->smarty_insert_scripts(' . $this->make_array($t) . '); ?>';
                     break;
-
-               
-                case 'insert' :
+                case 'insert':
                     $t = $this->get_para(substr($tag, 7), false);
 
-                    $out = "<?php \n" . '$k = ' . preg_replace("/(\'\\$[^,]+)/e" , "stripslashes(trim('\\1','\''));", var_export($t, true)) . ";\n";
+                    $out = "<?php \n" . '$k = ' . preg_replace("/(\'\\$[^,]+)/e", "stripslashes(trim('\\1','\''));", var_export($t, true)) . ";\n";
                     $out .= 'echo $this->_echash . $k[\'name\'] . \'|\' . serialize($k) . $this->_echash;' . "\n?>";
 
                     return $out;
@@ -439,7 +444,10 @@ class ATU_Smarty
                 case 'literal':
                     return '';
                     break;
-
+                case 'nosmarty':
+                    return '';
+                    break;
+                    
                 case 'cycle' :
                     $t = $this->get_para(substr($tag, 6), 0);
 
@@ -464,20 +472,17 @@ class ATU_Smarty
      */
     function get_val($val)
     {
-		
+        //echo "get_val:".$val;
         if (strrpos($val, '[') !== false)
         {
             $val = preg_replace("/\[([^\[\]]*)\]/eis", "'.'.str_replace('$','\$','\\1')", $val);
 			
         }
-		
-	
+
         if (strrpos($val, '|') !== false)
         {
             $moddb = explode('|', $val);
-			
             $val = array_shift($moddb);
-			
         }
 
         if (empty($val))
@@ -504,9 +509,7 @@ class ATU_Smarty
         {
             foreach ($moddb AS $key => $mod)
             {
-				
                 $s = explode(':', $mod);
-				
                 switch ($s[0])
                 {
                     case 'escape':
@@ -581,6 +584,7 @@ class ATU_Smarty
      */
     function make_var($val)
     {
+       
         if (strrpos($val, '.') === false)
         {
             if (isset($this->_var[$val]) && isset($this->_patchstack[$val]))
@@ -589,9 +593,11 @@ class ATU_Smarty
             }
 			preg_match("/(\+|-)\d/",$val,$arrs);
 			if(empty($arrs[0])){
-			
-           		 $p = '$this->_var[\'' . $val . '\']';
+                $p='$this->_var[\'' . $val . '\']';
+               // $p = '(empty('.$str.')?'.$str.':"")';
 			}else{
+                // $p='$this->_var[\'' . str_replace($arrs[0],"",$val) . '\']';
+               // $p = '(empty('.$str.')?'.$str.$arrs[0].':"")';
 				$p = '$this->_var[\'' . str_replace($arrs[0],"",$val) . '\']'.$arrs[0];
 			}
         }
@@ -609,6 +615,7 @@ class ATU_Smarty
             }
             else
             {
+              
                 $p = '$this->_var[\'' . $_var_name . '\']';
             }
             foreach ($t AS $val)
@@ -972,7 +979,6 @@ class ATU_Smarty
 
     function _eval($content)
     {
-		
         ob_start();
         eval('?' . '>' . trim($content));
         $content = ob_get_contents();

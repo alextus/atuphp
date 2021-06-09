@@ -81,7 +81,7 @@ class ATU_Router{
  		$directory=implode('/', $temp['dir']);
 		
 		$this->set_directory($directory);
-
+		
 		//最后一个元素 排除.
 		if($needExplodeEnd){
 			$end_segments=array_pop($segments);
@@ -98,14 +98,14 @@ class ATU_Router{
 		unset($temp);
 
 		//print_r($segments);exit;
-		
+		$file_path=APPPATH.'controllers/'.$this->fetch_directory();
 		if (count($segments) > 0){
-				
-				/*
-				echo $this->fetch_directory()."<br/>";
-				print_r($segments);
-				*/
-				if ( ! file_exists(APPPATH.'controllers/'.$this->fetch_directory().$segments[0].'.php')){
+
+			//echo $segments[0].":".$segments[1]."<br/>";
+			
+				//echo $file_path.$segments[0].'.php';
+				if ( ! file_exists($file_path.$segments[0].'.php')){
+					
 					//最后一个参数文件不存在，从默认文件中找
 					if (file_exists(APPPATH . 'controllers/' . $this->fetch_directory() . 'index.php')) {
 						$this->set_class_method_var("index", $segments[0]==""?"index":$segments[0],$segments);
@@ -114,8 +114,8 @@ class ATU_Router{
 					}
 					
 				}else{
-				
-					if($segments[0]=="index" && count($segments) > 1 &&  (file_exists(APPPATH . 'controllers/' . 	$this->fetch_directory() . $segments[1] . '.php')  )){
+					
+					if($segments[0]=="index" && count($segments) > 1 &&  (file_exists($file_path.$segments[1].'.php')  )){
 						
 							//如果有同名文件，优先调用文件的，然后调用index的
 							$c = count($segments) > 2 && $segments[2] != "";
