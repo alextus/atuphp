@@ -395,11 +395,13 @@ $dir=dirname(__FILE__)."/";
 
 require_once $dir.'Model.php';
 require_once $dir.'Controller.php';
-require_once $dir.'Mysql.php';
+
 //兼容低版本PHP
 require_once $dir."../fun/function_exists.php";
 //常用函数
 require_once $dir."../fun/common.php";
+//ATU_Mysql
+require_once $dir.'../libraries/Mysql.php';
 //ATU_Http
 require_once $dir."../libraries/Http.php";
 //ATU_Smarty

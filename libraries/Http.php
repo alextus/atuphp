@@ -306,22 +306,3 @@ return $result;
         curl_setopt(self::$ch, CURLOPT_BINARYTRANSFER, true) ;
     }
 }
-
-
-
-//get
-//Curl::get("http://www.baidu.com");
-//post
-//Curl::post("http://XXXXXXX" , array("username"=>"XXX","password"=>"XXX") );
-//向 http://a.com/a.php 上传内容和文件, a.php 的测试代码可以如下
-//Curl::post('http://a.com/a.php',array('id'=>1,'name'=>'yuanwei'),array('img'=>'file/a.jpg','files'=>array('file/1.zip','file/2.zip')));
-//销毁
-//Curl::close();
-
-//$curl = new Curl();
-//get
-//$curl->get("http://www.baidu.com");
-//post
-//$curl->post("http://XXXXXXX" , array("username"=>"XXX","password"=>"XXX") );
-//向 http://a.com/a.php 上传内容和文件, a.php 的测试代码可以如下
-///$curl->post('http://a.com/a.php',array('id'=>1,'name'=>'yuanwei'),array('img'=>'file/a.jpg','files'=>array('file/1.zip','file/2.zip')));
