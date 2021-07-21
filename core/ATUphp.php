@@ -404,6 +404,8 @@ require_once $dir."../fun/common.php";
 require_once $dir.'../libraries/Mysql.php';
 //ATU_Http
 require_once $dir."../libraries/Http.php";
+//ATU_File
+require_once $dir."../libraries/File.php";
 //ATU_Smarty
 require_once $dir."../libraries/Smarty.php";
 

@@ -74,7 +74,7 @@ function S_cookie($txt, $xss = false)
 }
 function _svar($txt, $xss = false)
 {
-    return $xss?SQLFilter(trim($txt)):trim($txt);
+    return $xss?SQLFilter(trim($txt)):str_replace("'", "\\'", trim($txt));
 }
 function SQLFilter($txt)
 {
@@ -408,6 +408,52 @@ function now()
 
 //-----------------------------------------------------------------------------
 ///FSO 相关
+//获取临时文件夹
+function get_tempdir($temp_dir=""){
+    if($temp_dir && is_dir($temp_dir) && is_readable($temp_dir)){
+    
+    }else{
+        $temp_dir = ini_get('upload_tmp_dir');
+        if ($temp_dir && (!is_dir($temp_dir) || !is_readable($temp_dir))) {
+            $temp_dir = '';
+        }
+        if (!$temp_dir && function_exists('sys_get_temp_dir')) { 
+            $temp_dir = sys_get_temp_dir();
+        }
+        $open_basedir = ini_get('open_basedir');
+        if ($open_basedir) {
+            $temp_dir     = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $temp_dir);
+            $open_basedir = str_replace(array('/', '\\'), DIRECTORY_SEPARATOR, $open_basedir);
+            if (substr($temp_dir, -1, 1) != DIRECTORY_SEPARATOR) {
+                $temp_dir .= DIRECTORY_SEPARATOR;
+            }
+            $found_valid_tempdir = false;
+            $open_basedirs = explode(PATH_SEPARATOR, $open_basedir);
+            foreach ($open_basedirs as $basedir) {
+                if (substr($basedir, -1, 1) != DIRECTORY_SEPARATOR) {
+                    $basedir .= DIRECTORY_SEPARATOR;
+                }
+                if (preg_match('#^'.preg_quote($basedir).'#', $temp_dir)) {
+                    $found_valid_tempdir = true;
+                    break;
+                }
+            }
+            if (!$found_valid_tempdir) {
+                $temp_dir = '';
+            }
+            unset($open_basedirs, $found_valid_tempdir, $basedir);
+        }
+    }
+    $temp_dir = @realpath($temp_dir); 
+    //修正
+    if($temp_dir=="C:\Windows"){
+        $temp_dir="C:\Windows\Temp";
+    }
+    if (substr($temp_dir, -1, 1) != DIRECTORY_SEPARATOR) {
+        $temp_dir .= DIRECTORY_SEPARATOR;
+    }
+    return $temp_dir;
+}
 ///创建文件夹 mkdir ($dir,0777);
 function make_dir($folder)
 {
@@ -452,29 +498,7 @@ function getFilePath($f)
     }
     return $p;
 }
-///删除一个目录，包括它的内容。 unlink($sFile);
-function destroyDir($dir, $virtual = false)
-{
-    $ds = DIRECTORY_SEPARATOR;
-    $dir = $virtual ? realpath($dir) : $dir;
-    $dir = substr($dir, -1) == $ds ? substr($dir, 0, -1) : $dir;
-    if (is_dir($dir) && $handle = opendir($dir)) {
-        while ($file = readdir($handle)) {
-            if ($file == '.' || $file == '..') {
-                continue;
-            } elseif (is_dir($dir.$ds.$file)) {
-                destroyDir($dir.$ds.$file);
-            } else {
-                unlink($dir.$ds.$file);
-            }
-        }
-        closedir($handle);
-        rmdir($dir);
-        return true;
-    } else {
-        return false;
-    }
-}
+
 ///创建文件
 function make_file($filePath, $Content)
 {
@@ -501,13 +525,7 @@ function make_file($filePath, $Content)
         return true;
     }
 }
-//删除文件
-function del_file($sFile)
-{
-    if (file_exists($sFile)) {
-        unlink($sFile);
-    }
-}
+
 
 //XSS过滤函数
 function RemoveXSS($val)
@@ -653,3 +671,37 @@ function utf82utf16($utf8)
     // ignoring UTF-32 for now, sorry
     return '';
 }
+/**
+ *   将数组转换为xml
+ *   @param array $data    要转换的数组
+ *   @param bool $root     是否要根节点
+ *   @return string         xml字符串
+ */
+function arr2xml($data, $root = true)
+{
+    $str="";
+    if ($root) {
+        $str .= "<xml>";
+    }
+    foreach ($data as $key => $val) {
+        //去掉key中的下标[]
+        $key = preg_replace('/\[\d*\]/', '', $key);
+        if (is_array($val)) {
+            $child = arr2xml($val, false);
+            $str .= "<$key>$child</$key>";
+        } else {
+            $str.= "<$key><![CDATA[$val]]></$key>";
+        }
+    }
+    if ($root) {
+        $str .= "</xml>";
+    }
+    return $str;
+}
+function xml2arr($xml)
+{
+    libxml_disable_entity_loader(true);
+    $arr = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
+    return $arr;
+}
+

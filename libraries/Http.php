@@ -140,7 +140,14 @@ class ATU_Http
             curl_close(self::$ch);
         }
     }
-
+    private static function getFile($path)
+    {
+        if (class_exists('\CURLFile')) {
+            return  new \CURLFile(realpath($path));//>=5.5
+        } else {
+            return   '@' . realpath($path);//<=5.5
+        }
+    }
     /**
     * 私有方法:执行最终请求
     *
@@ -174,14 +181,21 @@ class ATU_Http
                         $n=0;
                         foreach ($file as $f) {
                             //文件必需是绝对路径
-                            $postData[$key.'['.$n++.']'] ='@'.realpath($f);
+                            $postData[$key.'['.$n++.']'] =self::etFile($f);
                         }
                     } else {
-                        $postData[$key] ='@'.realpath($file);
+                        $postData[$key] =self::getFile($file);
                     }
                 }
             }
             //pr($postData); die;
+            if (class_exists('\CURLFile')) {
+                curl_setopt(self::$ch, CURLOPT_SAFE_UPLOAD, true);
+            } else {
+                if (defined('CURLOPT_SAFE_UPLOAD')) {
+                    curl_setopt(self::$ch, CURLOPT_SAFE_UPLOAD, false);
+                }
+            }
             curl_setopt(self::$ch, CURLOPT_POSTFIELDS, $postData);
         }
         //设置了引用页,否则自动设置
@@ -202,11 +216,11 @@ class ATU_Http
         //得到所有包括服务器返回的信息
         self::$info['after'] = curl_getinfo(self::$ch);
         //如果请求成功
-if (self::errno() ==0) { //&& $this->info['after']['http_code'] == 200
-return $result;
-} else {
-    return false;
-}
+        if (self::errno() ==0) { //&& $this->info['after']['http_code'] == 200
+            return $result;
+        } else {
+            return false;
+        }
     }
     /**
     * 返回解析后的URL，GET方式时会用到

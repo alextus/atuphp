@@ -22,4 +22,5 @@ class ATU_Model
         $ATU =& get_instance();
         return $ATU->_cookie($name, $value, $exitTime);
     }
+    
 }
