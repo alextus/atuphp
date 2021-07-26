@@ -74,7 +74,7 @@ function S_cookie($txt, $xss = false)
 }
 function _svar($txt, $xss = false)
 {
-    return $xss?SQLFilter(trim($txt)):str_replace("'", "\\'", trim($txt));
+    return $xss?SQLFilter(trim($txt)):str_replace("'", "&apos;", trim($txt));
 }
 function SQLFilter($txt)
 {
@@ -85,7 +85,7 @@ function SQLFilter($txt)
         return "";
     }
     if (!MAGIC_QUOTES_GPC) {
-        $txt = addslashes($txt);
+        //$txt = addslashes($txt);
     }
     
 
@@ -115,8 +115,8 @@ function SQLFilter($txt)
     $txt = str_replace("create", "cr&#101;ate", $txt);
     $txt = str_replace("rename", "ren&#097;me", $txt);
     $txt = str_replace("exists", "e&#120;ists", $txt);
-    $txt = str_replace("'", "&quot;", $txt);
-    $txt = str_replace("`", "&quot;", $txt);
+    $txt = str_replace("'", "&apos;", $txt);
+    $txt = str_replace("`", "&apos;", $txt);
 
     return $txt;
 }
