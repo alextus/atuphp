@@ -285,6 +285,71 @@ function isTime($str)
 }
 
 //---------------------------------------------------------------------------
+
+function ua(){
+	
+	$ua=isset($_SERVER['HTTP_USER_AGENT'])?$_SERVER['HTTP_USER_AGENT']:"";
+    $path=defined("path")?path:"";
+	$ua_file= $path."data/ua/".md5($ua).".txt";
+	if(!file_exists($ua_file)){
+		file_put_contents($ua_file,$ua);
+	}
+	return $ua;
+}
+function platform(){
+	$ua=ua();
+	if(strpos($ua, 'MicroMessenger') !== false){
+		$platform="weixin";
+	}elseif(strpos($ua, 'Weibo')!== false){
+		$platform="weibo";
+	}elseif(strpos($ua, 'Eleme')!== false){
+		$platform="eleme";
+	}else{
+		$platform="other";
+	}
+	return $platform;
+}
+
+function AlexCode(){
+	$time=time()%100000000;
+	$c=md5(AlexKey.$time);
+	$c=substr($c,0,strlen($c)-8);
+	return $c.$time;
+}
+
+function isAlexCode($v){
+	$len=strlen($v);
+	$time=substr($v,$len-8,$len);
+	$md=substr($v,0,$len-8);
+	$c=md5(AlexKey.$time);
+	if($md==substr($c,0,strlen($c)-8)){
+		return true;	
+	}else{
+		return false;
+	}
+}
+//16位
+function AlexUid(){
+	$r=rand(100,999);
+	$time=md5(time().$r);
+	$time=substr($time,0,8);
+	
+	$c=md5(AlexKey.$time);
+	$c=substr($c,0,4).$time;
+	return $c;
+}
+function isAlexUid($v){
+	$len=strlen($v);
+	$time=substr($v,$len-8,$len);
+	$md=substr($v,0,4);
+	$c=md5(AlexKey.$time);
+	if($md==substr($c,0,4)){
+		return true;	
+	}else{
+		return false;
+	}
+	
+}
 ///IP相关
 /**** 获得用户的真实IP地址*/
 function ip()
@@ -399,9 +464,9 @@ function hour()
 {
     return date("H", time());
 }
-function now()
+function now($deltime=0)
 {
-    return date("Y-m-d H:i:s", time());
+    return date("Y-m-d H:i:s", time()+$deltime);
 }
 
 
@@ -523,6 +588,21 @@ function make_file($filePath, $Content)
         }
         fclose($handle);
         return true;
+    }
+}
+function _cache($f, $content = null)
+{
+    if ($content) {
+        if (is_array($content)) {
+            $content = json_encode($content);
+        }
+        return file_put_contents($f, $content);
+    } else {
+        if (file_exists($f)) {
+            return file_get_contents($f);
+        } else {
+            return false;
+        }
     }
 }
 

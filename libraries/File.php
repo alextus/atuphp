@@ -302,6 +302,9 @@ class ATU_File
         if (strpos($oName, ".") > 0) {
             $type = strtolower(substr($oName, strrpos($oName, '.') + 1));
         }
+        if($type==""){
+            $type=$this->getOnlineFileType($url);
+        }
         $upload_path = $this->upload_path();
         $fileName = md5($url) . "." . $type;
         $tFile = $upload_path . "/" . $fileName;
@@ -312,6 +315,83 @@ class ATU_File
         $d = $this->upload_data($oName, $type, $upload_path, $fileName, $tFile, $url);
 
 
+        return $d;
+    }
+    public function getUrlHeader($url){
+        stream_context_set_default( [
+            'ssl' => [
+                'verify_host' => false,
+                'verify_peer' => false,
+                'verify_peer_name' => false,
+            ],
+        ]);
+        $d=get_headers($url,1); 
+        $arr=array();
+       
+       
+        foreach($d as $k=>$v){
+            if($k=="0"){
+                $arr["http"]=$v;
+               
+                preg_match('/(200|401|402|403|404|500)/', $v, $d2);
+                $arr["code"]=$d2[0];
+            }else{
+                $arr[strtolower($k)]=$v;
+                
+            }
+           
+        }
+        return $arr;
+    }
+    public function getOnlineFileType($url){
+        $header=$this->getUrlHeader($url);
+       
+        if(isset($header["content-type"])){
+
+            return $this->get_mime_type($header["content-type"]);
+        }else{
+            return "";
+        }
+       
+    }
+    public function httpcode($url, $type=1)
+    {
+        $t1 = microtime(true);
+        $d=array();
+        $d["url"]=$url;
+        if ($type==1) {
+           
+            $array =  $this->getUrlHeader($url);
+            if (empty($d["code"])) {
+               
+                $d["code"]='unkown';
+                $d["message"]="无效url资源！";
+            } else {
+                $d["code"]=$array["code"];
+              
+            }
+        } else {
+            $ch = curl_init();
+            $timeout = 10;
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_HEADER, 1);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_SSLVERSION, 2);
+            //curl_setopt($ch,CURLOPT_FOLLOWLOCATION,1);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+            
+            $contents = curl_exec($ch);
+            $d2=curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        
+            if (false == $contents) {
+                $d["code"]='unkown';
+                $d["message"]=curl_error($ch);
+            } else {
+                $d["code"]=$d2;
+            }
+        }
+        $t2 = microtime(true);
+        $d["usetime"]=($t2-$t1)/1000000000;
         return $d;
     }
     /*
@@ -726,7 +806,7 @@ class ATU_File
             }
         }
     }
-    function get_mime_type($mime)
+    public function get_mime_type($mime)
     {
         $type = "";
         foreach ($this->mime_arr as $key => $val) {
@@ -737,6 +817,8 @@ class ATU_File
         }
         return $type;
     }
+   
+
     private function _getMimeDetect()
     {
 
@@ -819,7 +901,7 @@ class ATU_File
         $determined_format = $this->getFileFormat($formattest, $filename);
         return $determined_format;
     }
-
+   
     public function getFileInfo($filename)
     {
     }

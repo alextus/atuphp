@@ -423,17 +423,10 @@ function loadLibrary($library)
 //缓存机制
 function cache($f, $content = null)
 {
-    $f = APPPATH . 'data/cache/' . $f . '.json';
-    if ($content) {
-        if (is_array($content)) {
-            $content = json_encode($content);
-        }
-        return file_put_contents($f, $content);
-    } else {
-        if (file_exists($f)) {
-            return file_get_contents($f);
-        } else {
-            return false;
-        }
+    $f=str_replace('data/cache/','',$f);
+    $f = APPPATH . 'data/cache/' . $f;
+    if(strpos($f,".")==false){
+        $f.='.json';
     }
+    return _cache($f, $content);
 }

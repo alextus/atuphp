@@ -43,6 +43,9 @@ class ATU_Mysql
         } else {
             $config=$db;
         }
+        if (!isset($config['db_charset'])) {
+            $config['db_charset']='utf8';
+        }
         if (!isset($config['db_mysqli'])) {
             $config['db_mysqli']=1;
         }
