@@ -140,7 +140,7 @@ class ATU_Exceptions {
 		set_status_header($status_code);
 
 		$message = '<p>'.implode('</p><p>', ( ! is_array($message)) ? array($message) : $message).'</p>';
-
+		echo  $message;exit;
 		if (ob_get_level() > $this->ob_level + 1)
 		{
 			ob_end_flush();

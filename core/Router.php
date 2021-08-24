@@ -110,7 +110,8 @@ class ATU_Router{
 					if (file_exists(APPPATH . 'controllers/' . $this->fetch_directory() . 'index.php')) {
 						$this->set_class_method_var("index", $segments[0]==""?"index":$segments[0],$segments);
 					} else {
-						show_404($this->fetch_directory().$segments[0],"404");
+						echo APPPATH . 'controllers/' . $this->fetch_directory() . 'index.php';exit;
+						//show_404($this->fetch_directory().$segments[0],"404");
 					}
 					
 				}else{

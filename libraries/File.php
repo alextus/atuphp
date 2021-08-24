@@ -1,5 +1,7 @@
 <?php
+
 define('ATU_File_PATH', dirname(__FILE__) . DIRECTORY_SEPARATOR . "File" . DIRECTORY_SEPARATOR);
+
 require_once ATU_File_PATH . "Docx.php";
 
 class ATU_File

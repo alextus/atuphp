@@ -246,6 +246,10 @@ if (! function_exists('log_message')) {
         }
         $logPath=config_item("log_path");
         $filefix=$type=="db"?"db_":"log_";
+        if(!file_exists($logPath)){
+            echo 'log folder not exist';
+            return;
+        }
         $file=$logPath.($file?$file:$filefix.date("Ymd", time()).".txt");
         
         $content=date("H:i:s", time()).":".($type=="db"?"":$type.":").$message."\n";
@@ -408,7 +412,6 @@ require_once $dir."../libraries/Http.php";
 require_once $dir."../libraries/File.php";
 //ATU_Smarty
 require_once $dir."../libraries/Smarty.php";
-
 
 //model加载机制
 function loadModel($model)

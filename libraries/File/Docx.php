@@ -1,9 +1,7 @@
-
 <?php
 if(!defined("ATU_File_TEMP")){
     define("ATU_File_TEMP",function_exists("get_tempdir")?get_tempdir("tmp"):sys_get_temp_dir());
 }
-
 class ATU_Docx
 {
     const SEPARATOR_TAB = "\t";
