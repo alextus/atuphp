@@ -251,7 +251,6 @@ if (! function_exists('log_message')) {
             return;
         }
         $file=$logPath.($file?$file:$filefix.date("Ymd", time()).".txt");
-        
         $content=date("H:i:s", time()).":".($type=="db"?"":$type.":").$message."\n";
         
         $fps = fopen($file, "a+");

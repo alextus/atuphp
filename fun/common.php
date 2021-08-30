@@ -89,10 +89,10 @@ function SQLFilter($txt)
     }
     
 
-    $txt = str_replace("script", "&#115;cript", $txt);
+   // $txt = str_replace("script", "&#115;cript", $txt);
     $txt = str_replace("SCRIPT", "&#083;CRIPT", $txt);
     $txt = str_replace("Script", "&#083;cript", $txt);
-    $txt = str_replace("script", "&#083;cript", $txt);
+   // $txt = str_replace("script", "&#083;cript", $txt);
     $txt = str_replace("object", "&#111;bject", $txt);
     $txt = str_replace("OBJECT", "&#079;BJECT", $txt);
     $txt = str_replace("Object", "&#079;bject", $txt);

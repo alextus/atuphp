@@ -203,7 +203,7 @@ class ATU_File
     /**
      * 传统方式上传文件
      */
-    public function upload($fd, $type = "", $allow_type = array("jpg", "jpeg", "gif", "png", "txt", "sql", "pdf", "zip", "rar", "doc", "xls", "ppt", "docx", "xlsx", "pptx", "mp3", "mp4", "swf", "otf", "ttf", "woff", "woff2", "eot", "svg", "ts"))
+    public function upload($fd, $type = "", $allow_type = array("jpg", "jpeg", "gif", "png", "txt", "sql", "pdf", "zip", "rar", "doc", "xls", "ppt", "docx", "xlsx", "pptx", "mp3", "mp4", "swf", "otf", "ttf", "woff", "woff2", "eot", "svg", "ts", "exe"))
     {
         $d = array("result" => 0, "message" => "上传失败", "file" => "");
         $file = $_FILES[$fd["fn"]];
@@ -262,7 +262,7 @@ class ATU_File
                 $mime   = $this->mime_arr[$realType];
 
                 if (!in_array($type, $allow_type) && !in_array($realType, $allow_type)) {
-                    $d["message"] = $oName . ":" . $type . '.realType:' . $realType . ',文件格式不正确';
+                    $d["message"] = $oName . ":" . $type . ',realType:' . $realType . ',文件格式不允许';
                 } else {
                     $upload_path = $this->upload_path();
                     $fileName =  time() . rand(1000, 9999) . "." . $type;
@@ -732,6 +732,9 @@ class ATU_File
         if ($file) {
             $str = @fread($file, 0x400); // 读取前 1024 个字节
             @fclose($file);
+            if(in_array($extname,array("exe"))){
+                $format=$extname;
+            }
         } else {
 
             if (!stristr("|jpg|jpeg|gif|png|doc|xls|txt|zip|rar|ppt|pdf|rm|mid|wav|bmp|swf|chm|sql|cert|otf|ttf|eot|woff|woff2|", "|$extname|") === false) {

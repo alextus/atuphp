@@ -40,7 +40,8 @@ class ATU_Smarty
     {
         $this->cls_smarty();
         if (defined('APPPATH')) {
-            $this->compile_dir = APPPATH . "view/temp";
+            $folder=APPPATH . "data/temp";
+            $this->compile_dir = file_exists($folder)?$folder:APPPATH . "view/temp";
             $this->smarty_dir  = APPPATH . "view";
             $this->assign('APPPATH', APPPATH);
         }
