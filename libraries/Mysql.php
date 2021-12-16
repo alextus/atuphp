@@ -11,6 +11,7 @@
  * ============================================================================
  * $Author: Alex.TU $
  * $Id: atu_smarty.php 070110 2021-05-23 17:03:16 Alex.TU 宁波 $
+ * varsion 1.0.1
  */
 
 
@@ -19,10 +20,11 @@ class ATU_Mysql
     public $link_id    = null;
     public $settings   = array();
     public $error_message  = array();
-    public $version        = '';
-    public $starttime      = 0;
-    public $mysqli   =0;
-    public $querys   =null; //最后一次查询
+    public $version    = '';
+    public $starttime  = 0;
+    public $mysqli     =0;
+    public $debug      =0;
+    public $querys     =null; //最后一次查询
 
     public $sql="";
     public $sqlArr = [
@@ -44,7 +46,7 @@ class ATU_Mysql
             $config=$db;
         }
         if (!isset($config['db_charset'])) {
-            $config['db_charset']='utf8';
+            $config['db_charset']='utf8mb4';
         }
         if (!isset($config['db_mysqli'])) {
             $config['db_mysqli']=1;
@@ -52,14 +54,17 @@ class ATU_Mysql
         if (!isset($config['db_quiet'])) {
             $config['db_quiet']=0;
         }
+        if (!isset($config['db_debug'])) {
+            $config['db_debug']=1;
+        }
         
-        $this->cls_mysql($config['db_host'], $config['db_user'], $config['db_pass'], $config['db_name'], $config['db_charset'], $config['db_mysqli'], $config['db_quiet']);
+        $this->cls_mysql($config['db_host'], $config['db_user'], $config['db_pass'], $config['db_name'], $config['db_charset'], $config['db_mysqli'], $config['db_quiet'], $config['db_debug']);
     }
 
-    public function cls_mysql($dbhost, $dbuser, $dbpw, $dbname = '', $charset = 'utf8', $mysqli = 1, $quiet = 0)
+    public function cls_mysql($dbhost, $dbuser, $dbpw, $dbname = '', $charset = 'utf8mb4', $mysqli = 1, $quiet = 0,$debug=0)
     {
         $this->mysqli=$mysqli;
-       
+        $this->debug=$debug;
         if ($quiet) {
             $this->connect($dbhost, $dbuser, $dbpw, $dbname, $charset, $mysqli, $quiet);
         } else {
@@ -69,12 +74,12 @@ class ATU_Mysql
                                     'dbpw'     => $dbpw,
                                     'dbname'   => $dbname,
                                     'charset'  => $charset,
-                                    'mysqli' => $mysqli
+                                    'mysqli'   => $mysqli
                                     );
         }
     }
 
-    public function connect($dbhost, $dbuser, $dbpw, $dbname = '', $charset = 'utf8', $mysqli = 0, $quiet = 0)
+    public function connect($dbhost, $dbuser, $dbpw, $dbname = '', $charset = 'utf8mb4', $mysqli = 0, $quiet = 0)
     {
         if ($mysqli) {
             if (!($this->link_id = @mysqli_connect($dbhost, $dbuser, $dbpw, $dbname))) {
@@ -145,12 +150,12 @@ class ATU_Mysql
         if (!$this->mysqli && time() > $this->starttime + 1) {
             $this->ping();
         }
-
+       
         if (!($this->querys = $this->mysqlFun("query", $sql, $this->link_id)) && $type != 'SILENT') {
-            $this->error_message[]['message'] = 'MySQL Query Error';
-            $this->error_message[]['sql']   = $sql;
-            $this->error_message[]['error'] = $this->mysqlFun("error", $this->link_id);
-            $this->error_message[]['errno'] = $this->mysqlFun("errno", $this->link_id);
+            $this->error_message['message'] = 'MySQL Query Error';
+            $this->error_message['sql']   = $sql;
+            $this->error_message['error'] = $this->mysqlFun("error", $this->link_id);
+            $this->error_message['errno'] = $this->mysqlFun("errno", $this->link_id);
 
             $this->ErrorMsg();
 
@@ -244,11 +249,17 @@ class ATU_Mysql
     {
         if ($message) {
             echo "<b>MySQL info</b>: $message\n\n<br /><br />";
+            $msg=$message;
+            $type="info";
         } else {
             echo "<b>MySQL server error report:";
             print_r($this->error_message);
+            $type="err";
+            $msg=$this->error_message["error"].",".$this->error_message["errno"];
         }
-
+        if($this->debug){
+            $this->log_message($type,$msg);
+        }
         exit;
     }
 
@@ -389,12 +400,22 @@ class ATU_Mysql
         $do=trim(strtolower($do));
       
         if ($do == "update") {
-            $sql = sprintf("UPDATE %s SET %s", $table, $this->iniSqlArr($data));
+            if(is_array($data)){
+                $sql = sprintf("UPDATE %s SET %s", $table, $this->iniSqlArr($data));
+            }else{
+                $sql ="UPDATE $table SET $data";
+            }
+            
         }
         if ($do == "insert") {
             $data = $where;
             foreach ($data as $key => &$value) {
-                $value = addslashes($value);
+                if(is_array($value)){
+                    $value=json_encode($value,JSON_UNESCAPED_UNICODE);
+                }else{
+                    $value = addslashes($value);
+                }
+               
             }
             $keys = "`".implode('`,`', array_keys($data))."`";
             $values = "'".implode("','", array_values($data))."'";
@@ -406,10 +427,15 @@ class ATU_Mysql
             if ($do == "select") {
                 $sql = "SELECT *  FROM $table";
             }
-            if (sizeof($where) > 0) {
-                $sql .= " WHERE ";
-                $sql .=$this->iniSqlArr($where, " and ");
+            if(is_array($where)){
+                if (sizeof($where) > 0) {
+                    $sql .= " WHERE ";
+                    $sql .=$this->iniSqlArr($where, " and ");
+                }
+            }else{
+                $sql .= " WHERE ".$where;
             }
+            
         }
         return $sql;
     }
@@ -420,7 +446,12 @@ class ATU_Mysql
         } else {
             $updateFields = [];
             foreach ($data as $key => $value) {
-                $up_value = addslashes($value);
+                if(is_array($value)){
+                    $up_value=json_encode($value,JSON_UNESCAPED_UNICODE);
+                }else{
+                    $up_value = addslashes($value);
+                }
+               
                 $updateFields[] = "`$key`='$up_value'";
             }
         }
@@ -573,7 +604,10 @@ class ATU_Mysql
             if (strpos($v, "character_set_connection")>0) {
                 //不记录
             } else {
-                $this->log_message("db", $fun.":".$v);
+                if($this->debug){
+                    $this->log_message($fun,$v);
+                }
+                
             }
         }
         if ($fun=="select_db") {

@@ -67,6 +67,9 @@ class ATU_Loader
     //加载数据库
     public function database($dbs = null)
     {
+        if (! class_exists('ATU_Model')) {
+            load_class('Model', 'core');
+        }
         $ATU =& get_instance();
         if (isset($ATU->db) and is_object($ATU->db)) {
             return false;

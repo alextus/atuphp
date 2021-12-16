@@ -238,24 +238,29 @@ if (! function_exists('show_404')) {
 * @access	public
 * @return	void
 */
-if (! function_exists('log_message')) {
+if (! function_exists('log_message')) { 
     function log_message($type, $message, $file="")
     {
+       
         if (!config_item("need_debug") && $type=="debug") {
             return;
         }
         $logPath=config_item("log_path");
-        $filefix=$type=="db"?"db_":"log_";
+        $filefix=$type."_";
         if(!file_exists($logPath)){
             echo 'log folder not exist';
-            return;
+            exit;
         }
+    
+        $needType=$file?true:false;
         $file=$logPath.($file?$file:$filefix.date("Ymd", time()).".txt");
-        $content=date("H:i:s", time()).":".($type=="db"?"":$type.":").$message."\n";
+      
+        $content=date("H:i:s", time()).":".($needType?$type.":":"").$message."\n";
         
         $fps = fopen($file, "a+");
         fwrite($fps, $content);
         fclose($fps);
+        
     }
 }
 
@@ -403,6 +408,7 @@ require_once $dir.'Controller.php';
 require_once $dir."../fun/function_exists.php";
 //常用函数
 require_once $dir."../fun/common.php";
+
 //ATU_Mysql
 require_once $dir.'../libraries/Mysql.php';
 //ATU_Http

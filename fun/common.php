@@ -4,12 +4,12 @@ define('MAGIC_QUOTES_GPC', ini_set("magic_quotes_runtime", 0)?true:false);
  * 基础函数库,Core/Controller.php中引用
  *
  */
-function _get($str, $xss = false)
+function _get($str, $xss = true)
 {
     return isset($_GET[$str])?_svar($_GET[$str], $xss):"";
 }
 
-function _post($str, $xss = false)
+function _post($str, $xss = true)
 {
     return isset($_POST[$str])?_svar($_POST[$str], $xss):"";
 }
@@ -72,9 +72,14 @@ function S_cookie($txt, $xss = false)
     }
     return $d;
 }
+function request($txt= "", $xss = true){
+    return isset($_GET[$txt])?S_get($txt,$xss):S_post($txt,$xss);
+}
+
+
 function _svar($txt, $xss = false)
 {
-    return $xss?SQLFilter(trim($txt)):str_replace("'", "&apos;", trim($txt));
+    return $xss?SQLFilter(trim($txt)):trim($txt);
 }
 function SQLFilter($txt)
 {
@@ -101,20 +106,20 @@ function SQLFilter($txt)
     $txt = str_replace("APPLET", "&#065;PPLET", $txt);
     $txt = str_replace("Applet", "&#065;pplet", $txt);
     $txt = str_replace("applet", "&#065;pplet", $txt);
-    $txt = str_replace("select", "sel&#101;ct", $txt);
-    $txt = str_replace("execute", "&#101xecute", $txt);
+    $txt = str_replace("select ", "sel&#101;ct ", $txt);
+    $txt = str_replace("execute ", "&#101xecute ", $txt);
     $txt = str_replace("exec", "&#101xec", $txt);
-    $txt = str_replace("join", "jo&#105;n", $txt);
-    $txt = str_replace("union", "un&#105;on", $txt);
-    $txt = str_replace("where", "wh&#101;re", $txt);
-    $txt = str_replace("insert", "ins&#101;rt", $txt);
-    $txt = str_replace("delete", "del&#101;te", $txt);
-    $txt = str_replace("update", "up&#100;ate", $txt);
-    $txt = str_replace("like", "lik&#101;", $txt);
-    $txt = str_replace("drop", "dro&#112;", $txt);
-    $txt = str_replace("create", "cr&#101;ate", $txt);
-    $txt = str_replace("rename", "ren&#097;me", $txt);
-    $txt = str_replace("exists", "e&#120;ists", $txt);
+    $txt = str_replace("join ", "jo&#105;n ", $txt);
+    $txt = str_replace("union ", "un&#105;on ", $txt);
+    $txt = str_replace("where ", "wh&#101;re ", $txt);
+    $txt = str_replace("insert ", "ins&#101;rt ", $txt);
+    $txt = str_replace("delete ", "del&#101;te ", $txt);
+    $txt = str_replace("update ", "up&#100;ate ", $txt);
+    $txt = str_replace("like ", "lik&#101; ", $txt);
+    $txt = str_replace("drop ", "dro&#112; ", $txt);
+    $txt = str_replace("create ", "cr&#101;ate ", $txt);
+    $txt = str_replace("rename ", "ren&#097;me ", $txt);
+    $txt = str_replace("exists ", "e&#120;ists ", $txt);
     $txt = str_replace("'", "&apos;", $txt);
     $txt = str_replace("`", "&apos;", $txt);
 
@@ -140,9 +145,9 @@ function Str_left($String, $Length, $Append = false)
     if ($Length == 0 || strlen($String) <= $Length) {
         return $String;
     } else {
-        if (function_exists('mb_substr')) {
-            $newstr = mb_substr($String, 0, $Length, "utf-8");
-        } elseif (function_exists('iconv_substr')) {
+        if (function_exists('mb_substr')) { 
+            $newstr = mb_substr($String, 0, $Length, "utf-8");  //>4.0.6,
+        } elseif (function_exists('iconv_substr')) {  //>5
             $newstr = iconv_substr($String, 0, $Length, "utf-8");
         } else {
             $newstr = substr($String, 0, $Length);
@@ -410,6 +415,46 @@ function server_ip()
     return $serverip;
 }
 
+function referer(){
+
+   if(isset($_SERVER["HTTP_REFERER"])){
+      return parse_url($_SERVER["HTTP_REFERER"])["host"];
+   }else{
+       return '';
+   }
+}
+
+function getMacAddr(){
+	$os_type=strtolower(PHP_OS) ;
+
+	$d="";
+	if($os_type=="linux"){
+		@exec("ifconfig -a", $mac);
+	}
+	if($os_type=="winnt"){
+		@exec("ipconfig /all", $mac);
+		if ( !$mac ){
+			$ipconfig = $_SERVER["WINDIR"]."system32ipconfig.exe";
+			if ( is_file($ipconfig) ){
+				@exec($ipconfig." /all", $mac);
+			}else{
+				@exec($_SERVER["WINDIR"]."systemipconfig.exe /all", $mac);
+			}
+		}
+	}
+	$temp_array = array();
+	foreach ( $mac as $value )
+	{
+		if ( preg_match( "/[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f][:-]"."[0-9a-f][0-9a-f]/i", $value, $temp_array ) )
+		{
+			$mac_addr = $temp_array[0];
+			break;
+		}
+	}
+	unset($temp_array);
+	return $mac_addr;
+}
+
 //-------------------------------------------------------------------------------------
 ////时间 相关
 
@@ -664,36 +709,52 @@ function isPhone()
 /*
 网页请求类
 */
-function http($url, $data='', $headers=array())
+function http($url, $data='', $headers=array(), $timeout = 30)
 {
-    $curl=curl_init();
-    
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 30);
-    curl_setopt($curl, CURLOPT_TIMEOUT, 30);
-    if (!empty($data)) {
-        curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
-    }
-    $headers[]="User-Agent: ATUPHP(alextu.com)";
-    if (count($headers) >= 1) {
-        curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
-    }
-    curl_setopt($curl, CURLOPT_URL, $url);
-    /*
-    简略版
-    curl_setopt($curl, CURLOPT_URL, $url);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER,FALSE);
-    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST,FALSE);
-    curl_setopt($curl, CURLOPT_RETURNTRANSFER,1);
-    */
+    $ch=curl_init();
 
-    $response=curl_exec($curl);
-    curl_close($curl);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    //以上为简略版本
+
+
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+    if (!empty($data)) {
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+    }
+    //$headers[]="User-Agent: ATUPHP(alextu.com)";
+    if (count($headers) >= 1) {
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    }
+    //curl_setopt($ch, CURLOPT_HEADER, true);
+    
+
+    $response=curl_exec($ch);
+
+    curl_close($ch);
     return $response;
 }
+
+function httpcode($url, $timeout = 30)
+{
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_TIMEOUT, $timeout);
+
+    $data = curl_exec($ch);
+
+    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
+    return $http_code;
+}
+
 /**
  * 编码格式转换
  */

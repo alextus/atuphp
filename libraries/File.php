@@ -397,6 +397,41 @@ class ATU_File
         return $d;
     }
     /*
+    * 获取网址favicon.ico
+    */
+    public function getShortIocn($url,$contents=""){
+        if(!$contents){
+            $contents=file_get_contents($url);
+        }
+        $urlArr=parse_url($url);
+        $mainUrl=$urlArr["scheme"]."://".$urlArr["host"];
+
+
+        preg_match('/<link.*?rel=".*?icon".*?href="(.*?)".*?>/', $contents,$icon);
+      
+        if(!empty($icon)){
+            $url=$icon[1];
+            if(substr($url,0,4)!="http"){
+                if(substr($url,0,2)=="//"){
+                    $url=$urlArr["scheme"].":".$url;
+                }else{
+                    $url=$mainUrl.(substr($url,0,1)!="/"?"/":"").$url;
+                }
+                
+            }
+           
+        }else{
+            $url=$mainUrl."/favicon.ico";
+        }
+       // echo $url;
+        $array = @get_headers($url,1); 
+        if(preg_match('/200/',$array[0])){ 
+            return $url;
+        }
+    
+        return "";    
+    }
+    /*
     * base64方式上传
      */
     public function uploadDataURL($img_data)

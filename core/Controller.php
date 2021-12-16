@@ -140,14 +140,14 @@ class ATU_Controller
         setcookie($name, $value, $expire, $path, $domain, $secure);
     }
 
-    public function _get($name)
+    public function _get($name,$xss=true)
     {
-        return _get($name);
+        return _get($name,$xss);
     }
 
-    public function _post($name = "")
+    public function _post($name = "",$xss=true)
     {
-        return _post($name);
+        return _post($name,$xss);
     }
 
     public function _cookie($name, $value = null, $exitTime = 0)
@@ -169,12 +169,14 @@ class ATU_Controller
     {
         return S_post($name, $xss);
     }
+    public function request($name = "", $xss = true)
+    {
+        return request($name, $xss);
+    }
     public function cookie($name, $value = null, $exitTime = 0)
     {
         return $this->_cookie($name, $value, $exitTime);
     }
-
-
 
 
 

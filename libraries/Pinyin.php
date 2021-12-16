@@ -53,9 +53,7 @@ class ATU_Pingyin
   }
   public function get($chinese){
     $d= $this->get_all_py($chinese);
-    print_r($d)."<br/>";
-
-
+  
     if(strlen($chinese)==1){
       return $d[0];
     }
@@ -125,7 +123,7 @@ class ATU_Pingyin
     return iconv('UTF-8', 'GB2312', $_String);
   }
 
-  private function zh_to_py($num, $blank = '')
+  public function zh_to_py($num, $blank = '')
   {
     if ($num > 0 && $num < 160) {
       return chr($num);

@@ -95,6 +95,13 @@ if (!function_exists('json_decode')) {
     }
 }
 
+function is_json($string) {
+
+   $d= json_decode($string,true);
+ 
+    return (json_last_error() == JSON_ERROR_NONE);
+}
+
 /*
  *
  * @category
