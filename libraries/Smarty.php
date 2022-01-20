@@ -98,7 +98,7 @@ class ATU_Smarty
      */
     function display($filename, $cache_id = '')
     {
-        echo $this->getHTTPPage($filename, $cache_id = '');
+        echo $this->getHTTPPage($filename, $cache_id);
     }
 
     function show($filename,$arr){

@@ -223,34 +223,35 @@ class ATU_File
         }
         $error = null;
         if (empty($file)) {
-            $error = '上传图片不存在';
-        }
-        if ($file['error']) {
-            switch ($file['error']) {
-                case '1':
-                    $error = '超过php.ini允许的大小。';
-                    break;
-                case '2':
-                    $error = '超过表单允许的大小。';
-                    break;
-                case '3':
-                    $error = '图片只有部分被上传。';
-                    break;
-                case '4':
-                    $error = '请选择图片。';
-                    break;
-                case '6':
-                    $error = '找不到临时目录。';
-                    break;
-                case '7':
-                    $error = '写文件到硬盘出错。';
-                    break;
-                case '8':
-                    $error = 'File upload stopped by extension。';
-                    break;
-                case '999':
-                default:
-                    $error = '未知错误。';
+            $error = '上传文件不存在';
+        }else{
+            if ($file['error']) {
+                switch ($file['error']) {
+                    case '1':
+                        $error = '超过php.ini允许的大小。';
+                        break;
+                    case '2':
+                        $error = '超过表单允许的大小。';
+                        break;
+                    case '3':
+                        $error = '文件只有部分被上传。';
+                        break;
+                    case '4':
+                        $error = '请选择文件。';
+                        break;
+                    case '6':
+                        $error = '找不到临时目录。';
+                        break;
+                    case '7':
+                        $error = '写文件到硬盘出错。';
+                        break;
+                    case '8':
+                        $error = 'File upload stopped by extension。';
+                        break;
+                    case '999':
+                    default:
+                        $error = '未知错误。';
+                }
             }
         }
         if ($error) {
@@ -320,6 +321,12 @@ class ATU_File
         return $d;
     }
     public function getUrlHeader($url){
+       
+        if(strpos($url,"http")==""){
+            $arr["code"]=200;
+            return $arr;
+        }
+
         stream_context_set_default( [
             'ssl' => [
                 'verify_host' => false,
@@ -361,10 +368,12 @@ class ATU_File
         $t1 = microtime(true);
         $d=array();
         $d["url"]=$url;
+       
         if ($type==1) {
            
             $array =  $this->getUrlHeader($url);
-            if (empty($d["code"])) {
+          
+            if (empty($array["code"])) {
                
                 $d["code"]='unkown';
                 $d["message"]="无效url资源！";

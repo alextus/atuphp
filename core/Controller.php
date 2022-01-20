@@ -155,7 +155,7 @@ class ATU_Controller
         $prefix = config_item('cookie_prefix') != '' ? config_item('cookie_prefix') : "";
         $name = $prefix . $name;
 
-        if (empty($value)) {
+        if (is_null($value)) {
             return S_cookie($name);
         } else {
             $this->set_cookie($name, $value, $exitTime == 0 ? time() + 1 * 60 * 60 : $exitTime);

@@ -251,12 +251,12 @@ if (! function_exists('log_message')) {
             echo 'log folder not exist';
             exit;
         }
-    
+        
         $needType=$file?true:false;
         $file=$logPath.($file?$file:$filefix.date("Ymd", time()).".txt");
       
         $content=date("H:i:s", time()).":".($needType?$type.":":"").$message."\n";
-        
+       // echo $file."|";
         $fps = fopen($file, "a+");
         fwrite($fps, $content);
         fclose($fps);

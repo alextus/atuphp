@@ -1,9 +1,11 @@
 <?php
-define('MAGIC_QUOTES_GPC', ini_set("magic_quotes_runtime", 0)?true:false);
 /**
  * 基础函数库,Core/Controller.php中引用
  *
  */
+
+define('MAGIC_QUOTES_GPC', ini_set("magic_quotes_runtime", 0)?true:false);
+
 function _get($str, $xss = true)
 {
     return isset($_GET[$str])?_svar($_GET[$str], $xss):"";
