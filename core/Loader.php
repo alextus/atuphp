@@ -116,7 +116,7 @@ class ATU_Loader
      * @param	string	an optional object name
      * @return	void
      */
-    public function library($library = '', $params = null, $object_name = null)
+    public function library($library = '', $params = null)
     {
         if (is_array($library)) {
             foreach ($library as $class) {
@@ -133,7 +133,7 @@ class ATU_Loader
         if (! is_null($params) && ! is_array($params)) {
             $params = null;
         }
-
+        $object_name = $library;
         $this->_atu_load_class($library, $params, $object_name);
     }
 
@@ -516,11 +516,12 @@ class ATU_Loader
      */
     protected function _atu_load_class($class, $params = null, $object_name = null)
     {
+       
         // Get the class name, and while we're at it trim any slashes.
         // The directory path can be included as part of the class name,
         // but we don't want a leading slash
-        $class = str_replace('.php', '', trim($class, '/'));
-
+        //20220410,替换扩展名，中间不替换
+        $class =  substr($class,-4)==".php"?substr($class,0,strlen($class)-4):trim($class);
         // Was the path included with the class name?
         // We look for a slash to determine this
         $subdir = '';
@@ -550,6 +551,7 @@ class ATU_Loader
                     // Before we deem this to be a duplicate request, let's see
                     // if a custom object name is being supplied.  If so, we'll
                     // return a new instance of the object
+                   
                     if (! is_null($object_name)) {
                         $ATU =& get_instance();
                         if (! isset($ATU->$object_name)) {

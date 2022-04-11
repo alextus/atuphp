@@ -476,7 +476,10 @@ class ATU_Smarty
         //echo "get_val:".$val;
         if (strrpos($val, '[') !== false)
         {
-            $val = preg_replace("/\[([^\[\]]*)\]/eis", "'.'.str_replace('$','\$','\\1')", $val);
+           // $val = preg_replace("/\[([^\[\]]*)\]/eis", "'.'.str_replace('$','\$','\\1')", $val);
+            $val = preg_replace_callback('/\[([^\[\]]*)\]/is',function ($matches) {
+                        return '.'.str_replace('$','\$',$matches[1]);
+                   },$val);
 			
         }
 

@@ -410,12 +410,7 @@ class ATU_Mysql
         if ($do == "insert") {
             $data = $where;
             foreach ($data as $key => &$value) {
-                if(is_array($value)){
-                    $value=json_encode($value,JSON_UNESCAPED_UNICODE);
-                }else{
-                    $value = addslashes($value);
-                }
-               
+               $value = $this->getRowVaule($value);
             }
             $keys = "`".implode('`,`', array_keys($data))."`";
             $values = "'".implode("','", array_values($data))."'";
@@ -439,6 +434,19 @@ class ATU_Mysql
         }
         return $sql;
     }
+    //20220331 双引号转
+    private function getRowVaule($value){
+        if(is_array($value)){
+            $ndata=array();
+            foreach($value as $k=>$v){
+                $ndata[$k]=addslashes($v); 
+            }
+            $value = json_encode($ndata,JSON_UNESCAPED_UNICODE);
+        }else{
+            $value = addslashes($value);
+        }
+        return $value;
+    }
     public function iniSqlArr($data, $split=',')
     {
         if (array_key_exists("0", $data)) {
@@ -446,12 +454,7 @@ class ATU_Mysql
         } else {
             $updateFields = [];
             foreach ($data as $key => $value) {
-                if(is_array($value)){
-                    $up_value=json_encode($value,JSON_UNESCAPED_UNICODE);
-                }else{
-                    $up_value = addslashes($value);
-                }
-               
+                $up_value = $this->getRowVaule($value);
                 $updateFields[] = "`$key`='$up_value'";
             }
         }

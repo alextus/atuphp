@@ -176,8 +176,8 @@ function str2htm($txt)
     $txt = str_replace(" ", "&nbsp;", $txt);
     $txt = str_replace("", "&nbsp;&nbsp;", $txt);
     $txt = str_replace("/n", "<br/>", $txt);
-    $txt = str_replace(chr(13), "<br/>", $txt);
-    $txt = str_replace(chr(10), "", $txt);
+    $txt = str_replace(chr(13), "<br/>", $txt); //硬回车
+    $txt = str_replace(chr(10), "<br/>", $txt); //软回车？
     $txt = str_replace(chr(0), "&nbsp;", $txt);
     $txt = str_replace(chr(7), "&nbsp;", $txt);
     $txt = str_replace(chr(9), "&nbsp;", $txt);
@@ -191,8 +191,6 @@ function str2htm($txt)
 function htm2str($txt)
 {
     $txt = str_replace("&nbsp;", chr(0), $txt);
-    $txt = str_replace("", chr(10), $txt);
-    $txt = str_replace("<br/>", "/n", $txt);
     $txt = str_replace("<br/>", chr(13), $txt);
     $txt = str_replace("&nbsp;&nbsp;", "", $txt);
     $txt = str_replace("&nbsp;", " ", $txt);
@@ -218,7 +216,18 @@ function strToArray($strs)
     }
     return $result;
 }
-
+function arraySort($array,$keys,$sort='asc') {
+    $newArr = $valArr = array();
+    foreach ($array as $key=>$value) {
+        $valArr[$key] = $value[$keys];
+    }
+    ($sort == 'asc') ?  asort($valArr) : arsort($valArr);
+    reset($valArr);
+    foreach($valArr as $key=>$value) {
+        $newArr[$key] = $array[$key];
+    }
+    return $newArr;
+}
 
 
 
@@ -296,11 +305,7 @@ function isTime($str)
 function ua(){
 	
 	$ua=isset($_SERVER['HTTP_USER_AGENT'])?$_SERVER['HTTP_USER_AGENT']:"";
-    $path=defined("path")?path:"";
-	$ua_file= $path."data/ua/".md5($ua).".txt";
-	if(!file_exists($ua_file)){
-		file_put_contents($ua_file,$ua);
-	}
+   
 	return $ua;
 }
 function platform(){

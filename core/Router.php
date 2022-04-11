@@ -59,8 +59,7 @@ class ATU_Router{
 		$path=str_replace(".html","",$path);
 		$path = str_replace(".php", "", $path);
 		*/
-		//echo $path;
-		
+	
 		if($path==""){return;}
 		$segments = explode('/', $path);
 		$temp = array('dir' => array(), 'path' => APPPATH.'controllers/');
@@ -177,7 +176,8 @@ class ATU_Router{
 	}
 	function set_method($v)
 	{
-		if(in_array($v,array("list","print"))){
+		//list 排除
+		if(in_array($v,array("print"))){
 			$v.="s";
 		}
 		$this->method=$v;
