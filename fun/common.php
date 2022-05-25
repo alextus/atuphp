@@ -621,9 +621,11 @@ function make_file($filePath, $Content)
 {
     if (!file_exists($filePath)) {
         //1.是否存在 / ,如果有，判断最后一个是否有小数点. 排除文件名后新建目录
-        if (strpos($filePath, "/")>0) {
+        //0525 strpos 更新为 substr_count ，防止第一个出现/的情况
+        if (substr_count($filePath, "/")>1) {
             $fileArr= preg_split("/\//", $filePath);
             $fileName=$fileArr[sizeof($fileArr)-1];
+           
             if (strpos($fileName, ".")>0) {
                 $filePath2=str_replace($fileName, "", $filePath);
                 make_dir($filePath2);
@@ -632,9 +634,11 @@ function make_file($filePath, $Content)
         //file_put_contents($filePath, $Content);
         $handle = fopen($filePath, "a");
         if (!$handle) {
+            echo 333;
             return false;
         }
         if (fwrite($handle, $Content) == false) {
+            echo 444;
             return false;
             ;
         }

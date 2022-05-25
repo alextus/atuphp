@@ -679,11 +679,11 @@ class ATU_Smarty
      */
     function get_template_vars($name = null)
     {
-        if (empty($name))
+        if (isset($this->_var))
         {
             return $this->_var;
         }
-        elseif (!empty($this->_var[$name]))
+        elseif (isset($this->_var[$name]))
         {
             return $this->_var[$name];
         }
