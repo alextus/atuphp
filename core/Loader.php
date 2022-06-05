@@ -72,12 +72,12 @@ class ATU_Loader
         }
         $ATU =& get_instance();
         if (isset($ATU->db) and is_object($ATU->db)) {
-            return false;
+            //return false;
+        }else{
+            $ATU->db =  new ATU_Mysql($dbs);
         }
-        $ATU->db = '';
         
-        // Load the DB class
-        $ATU->db =new ATU_Mysql($dbs);
+        return $ATU->db;
     }
 
     // --------------------------------------------------------------------
@@ -687,7 +687,10 @@ class ATU_Loader
      */
     private function _atu_autoloader()
     {
-        include(APPPATH.'config.php');
+        if(file_exists(APPPATH.'config.php')){
+            include(APPPATH.'config.php');
+        }
+        
         
         if (! isset($autoload)) {
             return false;

@@ -25,6 +25,7 @@ class ATU_Mysql
     public $mysqli     =0;
     public $debug      =0;
     public $querys     =null; //最后一次查询
+    public $loaded     =0;
 
     public $sql="";
     public $sqlArr = [
@@ -45,20 +46,24 @@ class ATU_Mysql
         } else {
             $config=$db;
         }
-        if (!isset($config['db_charset'])) {
-            $config['db_charset']='utf8mb4';
-        }
-        if (!isset($config['db_mysqli'])) {
-            $config['db_mysqli']=1;
-        }
-        if (!isset($config['db_quiet'])) {
+        $checkArr=array('db_host'=>'localhost','db_user'=>'','db_pass'=>'','db_name'=>'','db_charset'=>'utf8mb4','db_mysqli'=>1,'db_quiet'=>0,'db_debug'=>1);
+        if(!isset($config['db_quiet'])){
             $config['db_quiet']=0;
         }
-        if (!isset($config['db_debug'])) {
-            $config['db_debug']=1;
+        if(!isset($config['db_debug'])){
+            $config['db_debug']=isset($config['db_user'])?1:0;
+        }
+      
+  
+        foreach($checkArr as $k=>$v){
+            if (!isset($config[$k])) {
+                $config[$k]=$v;
+            }
         }
         
         $this->cls_mysql($config['db_host'], $config['db_user'], $config['db_pass'], $config['db_name'], $config['db_charset'], $config['db_mysqli'], $config['db_quiet'], $config['db_debug']);
+        
+        
     }
 
     public function cls_mysql($dbhost, $dbuser, $dbpw, $dbname = '', $charset = 'utf8mb4', $mysqli = 1, $quiet = 0,$debug=0)
@@ -81,8 +86,13 @@ class ATU_Mysql
 
     public function connect($dbhost, $dbuser, $dbpw, $dbname = '', $charset = 'utf8mb4', $mysqli = 0, $quiet = 0)
     {
+        $this->loaded=0;
+        if(!$dbhost||!$dbuser||!$dbpw){
+            return;
+        }
         if ($mysqli) {
             if (!($this->link_id = @mysqli_connect($dbhost, $dbuser, $dbpw, $dbname))) {
+               
                 if (!$quiet) {
                     $this->ErrorMsg("Can't mysqli MySQL Server($dbhost)!");
                 }
@@ -91,7 +101,6 @@ class ATU_Mysql
             }
         } else {
             $this->link_id = @mysql_connect($dbhost, $dbuser, $dbpw, true);
-            
             if (!$this->link_id) {
                 if (!$quiet) {
                     $this->ErrorMsg("Can't Connect MySQL Server($dbhost)!");
@@ -103,7 +112,7 @@ class ATU_Mysql
         $this->starttime = time();
         $this->version = $this->mysqlFun("get_server_info", $this->link_id);
         $this->set_mysql_charset($charset);
-        
+        $this->loaded=1;
             
         // mysql_query("SET sql_mode=''", $this->link_id);？
             
@@ -437,15 +446,23 @@ class ATU_Mysql
     //20220331 双引号转
     private function getRowVaule($value){
         if(is_array($value)){
-            $ndata=array();
-            foreach($value as $k=>$v){
-                $ndata[$k]=addslashes($v); 
-            }
+            $ndata=$this->addslashes_array($value);
             $value = json_encode($ndata,JSON_UNESCAPED_UNICODE);
         }else{
             $value = addslashes($value);
         }
         return $value;
+    }
+    private function addslashes_array($array){
+        $ndata=array();
+        foreach($array as $k=>$v){
+            if(is_array($v)){
+                $ndata[$k]=$this->addslashes_array($v);
+            }else{
+                $ndata[$k]=addslashes($v);
+            }
+        }
+        return $ndata;
     }
     public function iniSqlArr($data, $split=',')
     {

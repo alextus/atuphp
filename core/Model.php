@@ -16,7 +16,11 @@ class ATU_Model
         return $ATU->$key;
     }
     
-    
+   
+    public function post($name = "", $xss = true)
+    {
+        return S_post($name, $xss);
+    }
     public function cookie($name, $value=null, $exitTime=0)
     {
         $ATU =& get_instance();

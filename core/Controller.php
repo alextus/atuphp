@@ -21,7 +21,7 @@ class ATU_Controller
         foreach (is_loaded() as $var => $class) {
             $this->$var = &load_class($class);
         }
-
+        $this->configed=sizeof($config)>0?1:0;
 
 
 

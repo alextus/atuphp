@@ -1,6 +1,7 @@
 <?php
 class ATU_Router{
 	var $config;
+	var $path	= '';
 	var $directory	= '';
 	var $class      ="index";       
 	var $method     ="index";
@@ -55,12 +56,8 @@ class ATU_Router{
 			}
 			$path = str_replace($k, $v, $path);
 		}
-		/*
-		$path=str_replace(".html","",$path);
-		$path = str_replace(".php", "", $path);
-		*/
-	
 		if($path==""){return;}
+		$this->path=$path;
 		$segments = explode('/', $path);
 		$temp = array('dir' => array(), 'path' => APPPATH.'controllers/');
 		//print_r($segments);

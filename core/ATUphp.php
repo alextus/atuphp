@@ -132,11 +132,14 @@ if (! function_exists('get_config')) {
 
         // Fetch the config file
         if (! file_exists($file_path)) {
-            exit('The configuration file does not exist.');
+            //exit('The configuration file does not exist.');
+            $config= array();
+        }else{
+            require($file_path);
         }
 
 
-        require($file_path);
+        
 
         // Does the $config array exist in the file?
         if (! isset($config) or ! is_array($config)) {
@@ -242,9 +245,10 @@ if (! function_exists('log_message')) {
     function log_message($type, $message, $file="")
     {
        
-        if (!config_item("need_debug") && $type=="debug") {
+        if ((!config_item("need_debug") && $type=="debug")|| !config_item("log_path")) {
             return;
         }
+   
         $logPath=config_item("log_path");
         $filefix=$type."_";
         if(!file_exists($logPath)){
