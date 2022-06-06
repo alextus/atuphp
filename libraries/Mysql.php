@@ -472,7 +472,13 @@ class ATU_Mysql
             $updateFields = [];
             foreach ($data as $key => $value) {
                 $up_value = $this->getRowVaule($value);
-                $updateFields[] = "`$key`='$up_value'";
+                if(strpos($key,"like")>0){
+                    $key=str_replace('like','',$key);
+                    $key=trim($key);
+                    $updateFields[] = "`$key` like '%$up_value%'";
+                }else{
+                    $updateFields[] = "`$key`='$up_value'";
+                }
             }
         }
         
@@ -565,7 +571,7 @@ class ATU_Mysql
         if ($n=="" && $v=="") {
             $sql=$this->iniSql("update", $d);
         } else {
-            if (is_array($d)) {
+            if (is_array($d)||!is_numeric($d)) {
                 $data = $d;
                 $where = $n;
                 $table = $v==""?$this->sqlArr["table"]:$v;
