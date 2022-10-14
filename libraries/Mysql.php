@@ -128,6 +128,15 @@ class ATU_Mysql
         }
         return true;
     }
+    public function set_not_auto($noauto=true){
+        $this->link_id->autocommit($noauto?false:true);
+    }
+    public function commit(){
+        $this->link_id->commit();
+    }
+    public function rollback(){
+        $this->link_id->rollback();
+    }
 
     public function select_database($dbname)
     {
