@@ -614,6 +614,21 @@ function make_dir($folder)
     return $reval;
 }
 
+function get_dir($dir) {
+    $fileArray=array();
+    if (false != ($handle = opendir ( $dir ))) {
+        while ( false !== ($file = readdir ( $handle )) ) {
+    
+            if ($file != "." && $file != ".."){
+                $fileArray[]=$file;
+            }
+        }
+        //关闭句柄
+        closedir ( $handle );
+    }
+    return $fileArray;
+}
+
 function getFilePath($f)
 {
     $a=explode("/", $f);
@@ -634,28 +649,38 @@ function make_file($filePath, $Content)
         if (substr_count($filePath, "/")>1) {
             $fileArr= preg_split("/\//", $filePath);
             $fileName=$fileArr[sizeof($fileArr)-1];
-           
             if (strpos($fileName, ".")>0) {
                 $filePath2=str_replace($fileName, "", $filePath);
                 make_dir($filePath2);
             }
         }
-      
         //file_put_contents($filePath, $Content);
         $handle = fopen($filePath, "a");
         if (!$handle) {
-            
             return false;
         }
         if (fwrite($handle, $Content) == false) {
-          
             return false;
-            ;
         }
         fclose($handle);
         return true;
     }
 }
+//按行读取文件
+function get_file($file){
+    $lines=array();
+    if(file_exists($file)){
+        $handle = fopen($file, "r"); 
+        if ($handle) { 
+            while (($line = fgets($handle)) !== false) {
+              $lines[]=$line;
+            } 
+            fclose($handle); 
+        }
+    }
+    return $lines;
+}
+
 function _cache($f, $content = null)
 {
     if ($content) {
@@ -753,9 +778,11 @@ function http($url, $data='', $headers=array(), $timeout = 30)
     }
     //curl_setopt($ch, CURLOPT_HEADER, true);
     
-
+   
     $response=curl_exec($ch);
-
+    if( $response === false){
+        return curl_error($ch);
+    }
     curl_close($ch);
     return $response;
 }
