@@ -722,6 +722,9 @@ class ATU_Smarty
             switch (strtolower($token))
             {
                 case 'eq':
+                    $token = '==';
+                    break;
+                case 'eqs':
                     $token = '===';
                     break;
 
