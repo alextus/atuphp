@@ -60,6 +60,7 @@ class ATU_File
             'json' => 'text/json',
             'log'    =>    'text/plain',
             'mp3'  => 'audio/mpeg',
+            'm4a'  => 'audio/mp4a-latm',
             'mid'  => 'audio/midi',
             'midi'    =>    'audio/midi',
             'mkv'  => 'video/x-matroska',
@@ -208,7 +209,7 @@ class ATU_File
     /**
      * 传统方式上传文件
      */
-    public function upload($fd, $type = "", $allow_type = array("jpg", "jpeg", "gif", "png", "txt", "sql", "pdf", "zip", "rar", "doc", "xls", "ppt", "docx", "xlsx", "pptx", "mp3", "mp4", "swf", "otf", "ttf", "woff", "woff2", "eot", "svg", "ts", "exe"))
+    public function upload($fd, $type = "", $allow_type = array("jpg", "jpeg", "gif", "png", "txt", "sql", "pdf", "zip", "rar", "doc", "xls", "ppt", "docx", "xlsx", "pptx", "mp3", "mp4","m4a", "swf", "otf", "ttf", "woff", "woff2", "eot", "svg", "ts", "exe"))
     {
         $d = array("result" => 0, "message" => "上传失败", "file" => "");
         $file = $_FILES[$fd["fn"]];
