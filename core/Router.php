@@ -6,6 +6,7 @@ class ATU_Router{
 	var $class      ="index";       
 	var $method     ="index";
 	var $vars       =array();
+	var $ext ='';
 	function __construct()
 	{
 		$this->config=& get_config();
@@ -52,6 +53,8 @@ class ATU_Router{
 		$needExplodeEnd=0;
 		foreach($this->routes_replace as $k =>$v){
 			if(strpos($path,$k)){
+				$ext=str_replace(".","",$k);
+				$this->set_ext($ext);
 				$needExplodeEnd=1;
 			}
 			$path = str_replace($k, $v, $path);
@@ -184,17 +187,15 @@ class ATU_Router{
 		for($i=$s;$i<count($arr);$i++){
 			$v[]=$arr[$i];
 		}
-		
 		$this->vars=$v;	
-		
+	}
+	function set_ext($v){
+		$this->ext=$v;
 	}
 
 	function set_directory($v)
 	{
 		//第一个位置不能为/，最后一个位置要为/
-	
 		$this->directory=$v.'/';
 	}
-	
-
 }
