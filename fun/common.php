@@ -628,22 +628,30 @@ function make_dir($folder)
     clearstatcache();
     return $reval;
 }
-
-function get_dir($dir) {
-    $fileArray=array();
+$fileArray=array();
+function get_dir($dir,$depth=1) {
+    global $fileArray;
+    if($depth==1){
+        $fileArray=array();
+    }
     if (false != ($handle = opendir ( $dir ))) {
         while ( false !== ($file = readdir ( $handle )) ) {
     
-            if ($file != "." && $file != ".."){
-                $fileArray[]=$file;
+            if($file != "." && $file != ".."){
+                if(strpos($file,".")){
+                    $fileArray[]=$dir.$file;
+                }else{
+                    $ndir=$dir.$file."/";
+                    if(is_dir($ndir)){
+                        get_dir($ndir,$depth+1);
+                    }
+                }
             }
         }
-        //关闭句柄
-        closedir ( $handle );
+        closedir($handle); //关闭句柄
     }
     return $fileArray;
 }
-
 function getFilePath($f)
 {
     $a=explode("/", $f);
