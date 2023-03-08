@@ -4,11 +4,11 @@ class ATU_Weixin extends ATU_Oauth{
 	
 	var $AppID=""; 
 	var $AppSecret = ""; 
-    function __construct($appID, $appSecret)
+    function __construct($appID="", $appSecret="")
     {
-        $this->weixin($appID, $appSecret);
+        $this->ini($appID, $appSecret);
     }
-	function weixin($appID, $appSecret){
+	function ini($appID, $appSecret){
 		 $this->AppID=$appID;
 		 $this->AppSecret=$appSecret;
 		
@@ -293,9 +293,37 @@ class ATU_Weixin extends ATU_Oauth{
 		setcookie("union", '', 0);
 		
 	}
-	
-	
- 
+
+	//小程序端相关调用
+	public function getOpenid($code){
+		$appid = $this->AppID;
+		$appsecuret =  $this->AppSecret;
+		$url = "https://api.weixin.qq.com/sns/jscode2session?appid=$appid&secret=$appsecuret&js_code=$code&grant_type=authorization_code";
+		
+		return file_get_contents($url);
+	}
+	public function getMobile($sessionKey,$encryptedData,$iv){
+
+		$wexinDB = new WXBizDataCrypt($this->AppID, $this->AppSecret);
+		$errCode = $wexinDB->decryptData($encryptedData, $iv, $data );
+		
+		$d=array("result"=>0,"message"=>"fail");
+		
+		if ($errCode == 0) {
+			
+			$d["result"]=1;
+			$d["message"]="ok";
+			$data=json_decode($data,true);
+			$d["mobile"]=$data["phoneNumber"];
+		
+		} else {
+			
+			$d["message"]=$errCode;
+			
+		}
+		return $d;
+	}
+
 }
 
 
@@ -369,4 +397,3 @@ class WXBizDataCrypt
 }
 
 
-?>

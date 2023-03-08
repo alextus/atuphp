@@ -416,7 +416,14 @@ class ATU_File
     */
     public function getShortIocn($url,$contents=""){
         if(!$contents){
-            $contents=file_get_contents($url);
+            $stream_opts = [
+                "ssl" => [
+                    'verify_host' => false,
+                    "verify_peer"=>false,
+                    "verify_peer_name"=>false,
+                ]
+            ];
+            $contents=file_get_contents($url,false,stream_context_create($stream_opts));
         }
         $urlArr=parse_url($url);
         $mainUrl=$urlArr["scheme"]."://".$urlArr["host"];
@@ -439,6 +446,9 @@ class ATU_File
             $url=$mainUrl."/favicon.ico";
         }
        // echo $url;
+        if(str_have($url,"https")){
+            return $url;
+        }
         $array = @get_headers($url,1); 
         if(preg_match('/200/',$array[0])){ 
             return $url;

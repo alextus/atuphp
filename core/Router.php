@@ -38,6 +38,13 @@ class ATU_Router{
 		}elseif(isset($_SERVER['ORIG_PATH_INFO'])){
 			$_path_info = $_SERVER['ORIG_PATH_INFO'];
 			
+		}elseif(isset($_SERVER['REQUEST_URI'])){
+			//nginx 代理pathinfo mxtu.cn?
+		
+			$REQUEST_URI = $_SERVER['REQUEST_URI'];
+			$arr=explode("?",$REQUEST_URI);
+			$_path_info=$arr[0];
+			
 		}
 		if(empty($_path_info)){
 			return '/index';
@@ -99,18 +106,17 @@ class ATU_Router{
 		//print_r($segments);exit;
 		$file_path=APPPATH.'controllers/'.$this->fetch_directory();
 		if (count($segments) > 0){
-
-			//echo $segments[0].":".$segments[1]."<br/>";
-			
-				//echo $file_path.$segments[0].'.php';
-				if ( ! file_exists($file_path.$segments[0].'.php')){
-					
+				
+				/*
+				echo $this->fetch_directory()."<br/>";
+				print_r($segments);
+				*/
+				if ( ! file_exists(APPPATH.'controllers/'.$this->fetch_directory().$segments[0].'.php')){
 					//最后一个参数文件不存在，从默认文件中找
 					if (file_exists(APPPATH . 'controllers/' . $this->fetch_directory() . 'index.php')) {
 						$this->set_class_method_var("index", $segments[0]==""?"index":$segments[0],$segments);
 					} else {
-						echo APPPATH . 'controllers/' . $this->fetch_directory() . 'index.php';exit;
-						//show_404($this->fetch_directory().$segments[0],"404");
+						show_404($this->fetch_directory().$segments[0],"404");
 					}
 					
 				}else{

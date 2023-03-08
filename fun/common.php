@@ -108,10 +108,10 @@ function SQLFilter($txt)
     $txt = str_replace("SCRIPT", "&#083;CRIPT", $txt);
     $txt = str_replace("Script", "&#083;cript", $txt);
    // $txt = str_replace("script", "&#083;cript", $txt);
-    $txt = str_replace("object", "&#111;bject", $txt);
+   // $txt = str_replace("object", "&#111;bject", $txt);
     $txt = str_replace("OBJECT", "&#079;BJECT", $txt);
-    $txt = str_replace("Object", "&#079;bject", $txt);
-    $txt = str_replace("object", "&#079;bject", $txt);
+   // $txt = str_replace("Object", "&#079;bject", $txt);
+   // $txt = str_replace("object", "&#079;bject", $txt);
     $txt = str_replace("applet", "&#097;pplet", $txt);
     $txt = str_replace("APPLET", "&#065;PPLET", $txt);
     $txt = str_replace("Applet", "&#065;pplet", $txt);
@@ -168,7 +168,19 @@ function Str_left($String, $Length, $Append = false)
         return $newstr;
     }
 }
-
+function str_have($str,$value){
+    if(is_array($value)){
+        foreach($value as $v){
+            if(strlen($str)!=strlen(str_replace($v,"",$str))){
+                return true;
+            }
+        }
+    }
+    if(strlen($str)!=strlen(str_replace($value,"",$str))){
+        return true;
+    }
+    return false;
+}
 function str2htm($txt)
 {
     if (is_null($txt)) {
@@ -183,7 +195,7 @@ function str2htm($txt)
     
     $txt = str_replace(" ", "&nbsp;", $txt);
     $txt = str_replace("", "&nbsp;&nbsp;", $txt);
-    $txt = str_replace("/n", "<br/>", $txt);
+    $txt = str_replace("\n", "<br/>", $txt);
     $txt = str_replace(chr(13), "<br/>", $txt); //硬回车
     $txt = str_replace(chr(10), "<br/>", $txt); //软回车？
     $txt = str_replace(chr(0), "&nbsp;", $txt);
@@ -433,7 +445,8 @@ function server_ip()
 function referer(){
 
    if(isset($_SERVER["HTTP_REFERER"])){
-      return parse_url($_SERVER["HTTP_REFERER"])["host"];
+      $d=parse_url($_SERVER["HTTP_REFERER"]);
+      return isset($d["host"])?$d["host"]:$_SERVER["HTTP_REFERER"];
    }else{
        return '';
    }
@@ -528,7 +541,9 @@ function now($deltime=0)
 {
     return date("Y-m-d H:i:s", time()+$deltime);
 }
-
+function timetostr($time){
+    return date("Y-m-d H:i:s", $time);
+}
 
 
 //-----------------------------------------------------------------------------
@@ -744,12 +759,16 @@ function RemoveXSS($val)
     return $val;
 }
 
-
-function isPhone()
+function isPc()
 {
-    $ua = strtolower(@$_SERVER['HTTP_USER_AGENT']);
-    $uachar = "/(nokia|iphone|sony|ericsson|mot|samsung|sgh|lg|philips|panasonic|alcatel|lenovo|cldc|midp|mobile)/i";
-    return !preg_match("/(ipad)/i", $ua) && $ua != '' &&  preg_match($uachar, $ua);
+    if (isset($_SERVER['HTTP_USER_AGENT'])) {
+        $ua = strtolower($_SERVER['HTTP_USER_AGENT']);
+        //'sie-|netfront|ucweb|windowsce|palm|operamini|operamobi|openwave|nexusone'
+        $uachar = "iphone|ipod|android|blackberry|symbian|sgh|cldc|midp|mobile|wap|";
+        $uachar.= "nokia|ericsson|sharp|htc|alcatel|lg|philips|panasonic|sony|mot|samsung|lenovo|meizu";
+        return !(!preg_match("/(ipad)/i", $ua) && $ua != '' &&  preg_match("/(". $uachar.")/i", $ua));
+    }
+    return true;
 }
 
 /*
@@ -772,10 +791,13 @@ function http($url, $data='', $headers=array(), $timeout = 30)
         curl_setopt($ch, CURLOPT_POST, true);
         curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
     }
-    //$headers[]="User-Agent: ATUPHP(alextu.com)";
+   // ini_set("user_agent","Mozilla/4.0 (compatible; MSIE 5.00; Windows 98)");
     if (count($headers) >= 1) {
-        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+       
+    }else{
+        $headers[]="User-Agent: ATUPHP(alextu.com)";
     }
+    curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
     //curl_setopt($ch, CURLOPT_HEADER, true);
     
    

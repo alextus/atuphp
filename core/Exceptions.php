@@ -91,26 +91,33 @@ class ATU_Exceptions
 		$message = "The page you requested was not found.";
 
 		// By default we log this, but allow a dev to skip it
-		$url = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['PHP_SELF'];
+			$url='http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+			$urlArr=preg_split("/index.php\//",$url);
+			
+			$goUrl=$urlArr[1];
+			
+			if(!empty($arr[$goUrl])){
+			
+				header("Location: ".$urlArr[0].$arr[$goUrl]); 
 
-		if ($log_error) {
-
-			$url = str_replace("/index.php/", "/", $url);
-			if (!empty($_SERVER['QUERY_STRING'])) {
-				$url .= '?' . $_SERVER['QUERY_STRING'];
+				
+			}else{
+				if ($log_error){
+				
+					$url=str_replace("/index.php/","/",$url);
+					if(!empty($_SERVER['QUERY_STRING'])){
+						$url.='?'.$_SERVER['QUERY_STRING'];
+					}
+					
+					if(!empty($_SERVER['HTTP_REFERER'])){$url.=":".$_SERVER['HTTP_REFERER'];}
+					
+					log_message('error', '404 Page Not Found --> '.$page.":".$url);
+				}
+				echo $this->show_error($heading, $message, 'error_404', 404);
+		
 			}
-
-			if (!empty($_SERVER['HTTP_REFERER'])) {
-				$url .= ":" . $_SERVER['HTTP_REFERER'];
-			}
-
-			log_message('error', '404 Page Not Found --> ' . $page . ":" . $url);
+			exit;
 		}
-		echo $this->show_error($heading, $message, 'error_404', 404);
-
-
-		exit;
-	}
 
 
 

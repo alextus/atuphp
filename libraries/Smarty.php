@@ -118,11 +118,9 @@ class ATU_Smarty
 
         if (strpos($out, $this->_echash) !== false)
         {
-            
             $k = explode($this->_echash, $out);
             foreach ($k AS $key => $val)
             {
-                
                 if (($key % 2) == 1)
                 {
                     $k[$key] = $this->insert_mod($val);
@@ -276,7 +274,6 @@ class ATU_Smarty
         if ($this->force_compile || $filestat['mtime'] > $expires)
         {
             $this->_current_file = $filename;
-           
             $source = $this->fetch_str(file_get_contents($filename));
 
             if (file_put_contents($name, $source, LOCK_EX) === false)
@@ -433,6 +430,7 @@ class ATU_Smarty
 
                     return '<?php echo $this->smarty_insert_scripts(' . $this->make_array($t) . '); ?>';
                     break;
+                    /*
                 case 'insert':
                     $t = $this->get_para(substr($tag, 7), false);
 
@@ -441,7 +439,7 @@ class ATU_Smarty
 
                     return $out;
                     break;
-
+                    */
                 case 'literal':
                     return '';
                     break;
@@ -588,7 +586,6 @@ class ATU_Smarty
      */
     function make_var($val)
     {
-       
         if (strrpos($val, '.') === false)
         {
             if (isset($this->_var[$val]) && isset($this->_patchstack[$val]))
@@ -597,11 +594,9 @@ class ATU_Smarty
             }
 			preg_match("/(\+|-)\d/",$val,$arrs);
 			if(empty($arrs[0])){
-                $p='$this->_var[\'' . $val . '\']';
-               // $p = '(empty('.$str.')?'.$str.':"")';
+			
+           		 $p = '$this->_var[\'' . $val . '\']';
 			}else{
-                // $p='$this->_var[\'' . str_replace($arrs[0],"",$val) . '\']';
-               // $p = '(empty('.$str.')?'.$str.$arrs[0].':"")';
 				$p = '$this->_var[\'' . str_replace($arrs[0],"",$val) . '\']'.$arrs[0];
 			}
         }
@@ -619,7 +614,6 @@ class ATU_Smarty
             }
             else
             {
-              
                 $p = '$this->_var[\'' . $_var_name . '\']';
             }
             foreach ($t AS $val)
@@ -965,8 +959,10 @@ class ATU_Smarty
         list($fun, $para) = explode('|', $name);
         $para = unserialize($para);
         $fun = 'insert_' . $fun;
-
-        return $fun($para);
+        if(function_exists($fun)){
+            return $fun($para);
+        }
+        
     }
 
     function str_trim($str)
