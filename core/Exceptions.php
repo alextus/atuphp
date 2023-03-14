@@ -92,13 +92,11 @@ class ATU_Exceptions
 
 		// By default we log this, but allow a dev to skip it
 			$url='http://'.$_SERVER['HTTP_HOST'].$_SERVER['PHP_SELF'];
+		
 			$urlArr=preg_split("/index.php\//",$url);
-			
-			$goUrl=$urlArr[1];
-			
-			if(!empty($arr[$goUrl])){
-			
-				header("Location: ".$urlArr[0].$arr[$goUrl]); 
+		
+			if(isset($urlArr[1]) && !empty($arr[$urlArr[1]])){
+				header("Location: ".$urlArr[0].$arr[$urlArr[1]]); 
 
 				
 			}else{
