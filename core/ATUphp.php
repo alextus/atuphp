@@ -442,3 +442,6 @@ function cache($f, $content = null)
     }
     return _cache($f, $content);
 }
+function cacheFile($path='data/cache/'){
+    return get_dir(APPPATH .$path);
+}
