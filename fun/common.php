@@ -713,7 +713,13 @@ function _cache($f, $content = null)
         return file_put_contents($f, $content);
     } else {
         if (file_exists($f)) {
-            return file_get_contents($f);
+            $d=file_get_contents($f);
+            if(is_json($d)){
+                return json_decode($d,true);
+            }else{
+                return $d;
+            }
+		
         } else {
             return false;
         }

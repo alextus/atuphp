@@ -66,6 +66,9 @@ class ATU_Router{
 			}
 			$path = str_replace($k, $v, $path);
 		}
+		if($this->config["base_url"]){
+			$path = str_replace($this->config["base_url"], '', $path);
+		}
 		if($path==""){return;}
 		$this->path=$path;
 		$segments = explode('/', $path);
@@ -76,7 +79,7 @@ class ATU_Router{
 		{
 			
 			$temp['path'] .= $v.'/';
-		
+			//echo $temp['path'].":".(is_dir($temp['path'])?1:0)."<br/>";
 			if(is_dir($temp['path']))
 			{
 				$temp['dir'][] = $v;
@@ -105,12 +108,14 @@ class ATU_Router{
 
 		//print_r($segments);exit;
 		$file_path=APPPATH.'controllers/'.$this->fetch_directory();
+	
 		if (count($segments) > 0){
 				
 				/*
 				echo $this->fetch_directory()."<br/>";
 				print_r($segments);
 				*/
+				
 				if ( ! file_exists(APPPATH.'controllers/'.$this->fetch_directory().$segments[0].'.php')){
 					//最后一个参数文件不存在，从默认文件中找
 					if (file_exists(APPPATH . 'controllers/' . $this->fetch_directory() . 'index.php')) {
